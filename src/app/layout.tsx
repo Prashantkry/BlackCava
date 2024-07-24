@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Head from "next/head";
 import "./globals.css";
+import CustomNavbar from "@/components/CustomNavbar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +18,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <Head>
+        <link href="https://api.fontshare.com/v2/css?f[]=boska@400&f[]=panchang@400&f[]=chillax@200,300&display=swap" rel="stylesheet" />      </Head>
+      <body className={inter.className}>
+        <CustomNavbar />
+        {children}
+      </body>
     </html>
   );
 }
