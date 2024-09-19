@@ -28,6 +28,36 @@ const nextConfig = {
                 port: '',
                 pathname: '/**',
             },
+            {
+                protocol: 'https',
+                hostname: 'images.pexels.com',
+                port: '',
+                pathname: '/photos/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'cdn.pixabay.com',
+                port: '',
+                pathname: '/photo/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'iili.io', // Added hostname for the new image source
+                port: '',
+                pathname: '/**', // Adjust pathname if needed to match the URL pattern
+            },
+            {
+                protocol: 'https',
+                hostname: 'images.unsplash.com', // Added hostname for Unsplash images
+                port: '',
+                pathname: '/**', // Adjust pathname if needed to match the URL pattern
+              },
+            {
+                protocol: 'https',
+                hostname: 'fakestoreapi.com',
+                port: '',
+                pathname: '/img/**',
+            },
         ],
     },
 };

@@ -55,7 +55,7 @@ function Navbar({ className }: { className?: string }) {
                         />
                     </div>
                 </MenuItem>
-                <Image src={img} alt="" width={50} height={50} className="rounded-full" />
+                <Image src={img} alt="x" width={50} height={50} className="rounded-full" />
                 <MenuItem setActive={setActive} active={active} item="Pricing">
                     <div className="flex flex-col space-y-4 text-sm">
                         <HoveredLink href="/hobby">Hobby</HoveredLink>

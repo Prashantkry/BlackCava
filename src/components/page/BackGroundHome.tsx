@@ -1,41 +1,33 @@
 "use client";
-import { motion } from "framer-motion";
-import { HeroHighlight, Highlight } from "../ui/hero-highlight";
-import { ThreeDCard } from "./ThreeDCard";
+
 import Image from "next/image";
-import { draw } from "@/assets/Media";
-import { TextCard } from "./TextCard";
+import { shop4 } from "@/assets/Media";
 
 export function BackGroundHome() {
     return (
-        <HeroHighlight className="flex items-center justify-between w-full h-full">
-            <motion.h1
-                initial={{
-                    opacity: 0,
-                    y: 20,
-                }}
-                animate={{
-                    opacity: 1,
-                    y: [20, -5, 0],
-                }}
-                transition={{
-                    duration: 0.5,
-                    ease: [0.4, 0.0, 0.2, 1],
-                }}
-                className="text-2xl px-4 md:text-4xl lg:text-xl font-bold text-neutral-300 dark:text-black max-w-4xl leading-relaxed lg:leading-snug text-center w-[45%] mx-auto "
-            >
-                {/* Coffea canephora is less susceptible to disease than C. arabica and can be cultivated in lower altitudes and warmer climates where C. arabica will not thrive. */}
-
-                {/* <span>Indulge in the rich, aromatic embrace of our signature...</span> */}
-                <Highlight className="text-gray-200 border-0 text-[6rem] dark:text-white abftxt">
-                    Black <span className='text-indigo-600 font-extrabold tracking-widest'>Cava</span>
-                </Highlight>
-                <TextCard />
-            </motion.h1>
-            <div className="w-fit mb-20 mr-20 border-0">
-                <ThreeDCard />
+        <section className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
+            {/* Background Image */}
+            <Image
+                src={shop4}
+                alt="BlackCava Coffee"
+                layout="fill"
+                objectFit="cover"
+                className="absolute inset-0 z-0"
+            />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black z-10"></div>
+            {/* Content */}
+            <div className="relative z-20 text-center mt-[40vh] sm:mt-10 px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 lg:py-24 flex flex-col items-center">
+                <p className="text-2xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl text-teal-300 font-semibold mb-4 sm:mb-6 md:mb-8 lg:mb-10 leading-tight animate-fadeInUp">
+                    Crafting the Perfect Cup, One Bean at a Time.
+                </p>
+                <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-300 mb-6 sm:mb-8 md:mb-10 lg:mb-12 leading-relaxed mx-4 sm:mx-6 md:mx-8 lg:mx-12 max-w-4xl">
+                    Immerse yourself in a coffee experience where every sip tells a story. From sourcing the finest beans to expert roasting, we bring you unparalleled quality.
+                </p>
+                <button className="px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 bg-yellow-500 text-black font-semibold rounded-full shadow-lg hover:bg-yellow-400 hover:shadow-xl transition-transform transform hover:scale-105 duration-300 focus:outline-none focus:ring-4 focus:ring-yellow-300">
+                    Explore Now
+                </button>
             </div>
-            {/* <Image className="absolute mt-[32vh] w-full" src={draw} alt="coffee" /> */}
-        </HeroHighlight>
+        </section>
     );
 }
