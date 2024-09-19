@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import Head from "next/head";
 import "./globals.css";
 import CustomNavbar from "@/components/CustomNavbar";
 
+// Optimized Inter font import from next/font
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -13,13 +13,22 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
-      <Head>
-        <link href="https://api.fontshare.com/v2/css?f[]=boska@400&f[]=panchang@400&f[]=chillax@200,300&display=swap" rel="stylesheet" />      </Head>
+      <head>
+        {/* Include Fontshare and Google Font links here */}
+        <link
+          href="https://api.fontshare.com/v2/css?f[]=boska@400&f[]=panchang@400&f[]=chillax@200,300&display=swap"
+          rel="stylesheet"
+        />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Satisfy&display=swap"
+          rel="stylesheet"
+        />
+      </head>
       <body className={inter.className}>
         <CustomNavbar />
         {children}
