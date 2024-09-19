@@ -34,3 +34,11 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+
+# other folder 
+/depricated
+/D:\My Code Journey\Production\blackcava\depricated
+D:\My Code Journey\Production\blackcava\depricated\BackGroundHome.tsx
+
+/other
