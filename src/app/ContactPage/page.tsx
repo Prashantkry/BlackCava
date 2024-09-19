@@ -43,7 +43,7 @@ const Page = () => {
 
     return (
         <div className="bg-black w-full min-h-screen flex items-center justify-center px-4 sm:px-10">
-            <div className="w-full sm:w-[80%] lg:w-[50%] mx-auto rounded-none md:rounded-2xl p-6 md:p-10 shadow-lg bg-black dark:bg-white border border-gray-700 dark:border-gray-300">
+            <div className="w-full mb-20 md:mb-0 sm:w-[80%] lg:w-[50%] mx-auto rounded md:rounded-2xl p-6 md:p-10 shadow-lg bg-black dark:bg-white border border-gray-700 dark:border-gray-300">
                 {/* Company Name */}
                 <h2 className="text-2xl md:text-4xl font-bold text-center text-white dark:text-black">
                     BlackCava
