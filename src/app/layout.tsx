@@ -3,7 +3,6 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import CustomNavbar from "@/components/CustomNavbar";
 
-// Optimized Inter font import from next/font
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
@@ -19,7 +18,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* Include Fontshare and Google Font links here */}
         <link
           href="https://api.fontshare.com/v2/css?f[]=boska@400&f[]=panchang@400&f[]=chillax@200,300&display=swap"
           rel="stylesheet"

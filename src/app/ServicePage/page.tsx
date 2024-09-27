@@ -10,8 +10,7 @@ interface BoxComponentProps {
 const page: React.FC = () => {
     return (
         <>
-            {/* <div className='w-full min-h-screen p-6 bg-[#1f1f1e] text-white'> */}
-            <div className='w-full min-h-screen p-6 bg-black text-white'>
+\            <div className='w-full min-h-screen p-6 bg-black text-white'>
                 {/* Company Name */}
                 <div className="text-center mb-10">
                     <h1 className="text-4xl font-extrabold text-[#fff] tracking-widest">BlackCava</h1>

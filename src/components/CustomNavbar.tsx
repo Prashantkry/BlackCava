@@ -1,4 +1,4 @@
-"use client"; // Ensure it's a client-side component
+"use client"; 
 import { useState } from 'react';
 import { usePathname } from 'next/navigation'; // Correct hook for Next.js
 import { coffee0 } from '@/assets/Media';
@@ -8,7 +8,7 @@ import { FaShoppingCart, FaHeart } from 'react-icons/fa';
 
 const CustomNavbar = () => {
     const [isOpen, setIsOpen] = useState(false);
-    const pathname = usePathname(); // Get the current path
+    const pathname = usePathname(); 
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
@@ -53,15 +53,12 @@ const CustomNavbar = () => {
                     <div className="hidden md:flex items-center space-x-6">
                         <Link href="/cart" className="hover:text-indigo-400 transition duration-300 group">
                             <FaShoppingCart size={24} />
-                            {/* <span className="group-hover:underline decoration-indigo-400">Cart</span> */}
                         </Link>
                         <Link href="/favorites" className="hover:text-indigo-400 transition duration-300 group">
                             <FaHeart size={24} />
-                            {/* <span className="group-hover:underline decoration-indigo-400">Favorites</span> */}
                         </Link>
                     </div>
 
-                    {/* Hamburger Menu Button for small screens */}
                     <div className="md:hidden flex items-center">
                         <button className="outline-none focus:outline-none" onClick={toggleMenu}>
                             <svg className="w-6 h-6 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -91,7 +88,6 @@ const CustomNavbar = () => {
                         <Link href="/ContactPage" className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 hover:text-white ${isActive('/ContactPage') ? 'bg-gray-800 text-white' : ''}`}>
                             Contact
                         </Link>
-                        {/* Cart and Favorite Links in Mobile Menu */}
                         <Link href="/cart" className="block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 hover:text-white">
                             Cart
                         </Link>

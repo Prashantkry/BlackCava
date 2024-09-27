@@ -3,8 +3,8 @@ import Image from "next/image";
 import { coffee1, shop4 } from "@/assets/Media";
 
 // Importing Google Fonts for cursive font
-import "@fontsource/raleway"; // For main font
-import "@fontsource/lora"; // For cursive font
+import "@fontsource/raleway";
+import "@fontsource/lora"; 
 
 const AboutPage = () => {
   return (

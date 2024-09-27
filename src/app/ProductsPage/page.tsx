@@ -97,6 +97,7 @@ const ProductsPage = () => {
                             <p className="text-gray-300 text-sm mb-2">{product.description}</p>
                             {/* <p className="text-gray-400 text-xs mb-4">{product.ingredients.join(', ')}</p> */}
                             <div className="flex justify-between items-center w-full mt-auto">
+                                {/* fav button  */}
                                 <motion.button
                                     className={`bg-red-600 text-white px-3 py-1 rounded-full text-sm md:text-lg font-semibold transition-transform ${favorites.includes(product.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
                                     onClick={() => handleAddToFavorites(product.id)}
@@ -106,6 +107,8 @@ const ProductsPage = () => {
                                 >
                                     <FaHeart size={16} />
                                 </motion.button>
+                                
+                                {/* cart add */}
                                 <motion.button
                                     className={`bg-yellow-600 text-gray-900 px-3 py-1 rounded-full text-sm md:text-lg font-semibold transition-transform ${cart.includes(product.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
                                     onClick={() => handleAddToCart(product.id)}
