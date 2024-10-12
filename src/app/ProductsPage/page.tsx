@@ -1,42 +1,81 @@
 "use client";
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
-import { FaShoppingCart, FaHeart } from 'react-icons/fa';
+import { useSearchParams } from 'next/navigation'
+import { Coffee } from '../Modals/modal';
+import { coffeeData } from '@/assets/dummyData';
+import CoffeeCard from '@/components/CoffeeCard';
 
 // API URL
-const API_URL = 'https://api.sampleapis.com/coffee/hot';
+// const API_URL = 'https://api.sampleapis.com/coffee/hot';
+const API_URL = 'http://localhost:3000/api/products/getProducts';
 
 const ProductsPage = () => {
-    const [products, setProducts] = useState<any[]>([]);
+    const [products, setProducts] = useState<Coffee[]>([]);
+    const searchParams = useSearchParams();
+    const search = searchParams.get('search');
+    const [filteredProducts, setFilteredProducts] = useState<Coffee[]>([]);
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [favorites, setFavorites] = useState<number[]>([]);
-    const [cart, setCart] = useState<number[]>([]);
+    const [searchQuery, setSearchQuery] = useState<string>('');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await fetch(API_URL);
+                const response = await fetch(API_URL, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
                 const data = await response.json();
-                setProducts(data);
+                console.log('Raw response data:', data);
+
+                // Check if data is successful and set products accordingly
+                if (data.success = true) {
+                    setProducts(data.data); // Set products state
+                    setFilteredProducts(data.data); // Set filtered products for initial rendering
+                } else {
+                    console.error('Failed to fetch products:', data.message);
+                }
             } catch (error) {
                 console.error('Error fetching products:', error);
             }
         };
+
         fetchProducts();
     }, []);
 
-    const filteredProducts = selectedCategory === 'All'
-        ? products
-        : products.filter(product => product.category === selectedCategory);
+    useEffect(() => {
+        if (search && typeof search === 'string') {
+            filterByName(search);
+        } else {
+            setFilteredProducts(products);
+        }
+    }, [search, products]);
 
-    const handleAddToFavorites = (productId: number) => {
-        setFavorites(prevFavorites => [...prevFavorites, productId]);
+    const filterByCategory = (categoryName: string) => {
+        setSelectedCategory(categoryName);
+        const filteredData = categoryName === 'All' ? products : products.filter(product => product.category.toLowerCase() === categoryName.toLowerCase());
+        setFilteredProducts(filteredData);
+        setCurrentPage(1);
     };
 
-    const handleAddToCart = (productId: number) => {
-        setCart(prevCart => [...prevCart, productId]);
+    const filterByName = (searchTerm: string) => {
+        setSearchQuery(searchTerm);
+        const searchWords = searchTerm.split(' ').map(word => word.trim().toLowerCase());
+        const filteredData = products.filter(product =>
+            searchWords.some(searchWord => product.name.toLowerCase().includes(searchWord) || product.description.toLowerCase().includes(searchWord))
+        );
+        setFilteredProducts(filteredData);
+        setCurrentPage(1);
     };
+
+    const indexOfLastProduct = currentPage * itemsPerPage;
+    const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
+    const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
+    const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
     return (
         <div className="min-h-screen bg-gray-900 text-white py-16 px-4">
@@ -51,13 +90,24 @@ const ProductsPage = () => {
                     Welcome to Our Coffee Shop
                 </motion.h1>
 
+                {/* Search by Coffee Name */}
+                <div className="flex justify-center mb-8">
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => filterByName(e.target.value)}
+                        placeholder="Search coffee by name..."
+                        className="py-2 px-4 w-full max-w-lg rounded-lg text-black"
+                    />
+                </div>
+
                 {/* Coffee Categories */}
                 <div className="flex flex-wrap justify-center gap-4 mb-12">
-                    {['All', 'Espresso', 'Cappuccino', 'Latte', 'Mocha'].map((category) => (
+                    {['All', 'Espresso', 'Cappuccino', 'Mocha', 'Iced Coffee'].map((category) => (
                         <motion.button
                             key={category}
                             className={`py-2 px-4 md:py-3 md:px-6 rounded-lg text-base md:text-xl font-semibold transition-transform ${selectedCategory === category ? 'bg-yellow-500 text-gray-900 transform scale-110 shadow-lg' : 'bg-gray-700 hover:bg-gray-600'}`}
-                            onClick={() => setSelectedCategory(category)}
+                            onClick={() => filterByCategory(category)}
                             whileHover={{ scale: 1.1, rotate: 5 }}
                             whileTap={{ scale: 0.9 }}
                         >
@@ -68,59 +118,30 @@ const ProductsPage = () => {
 
                 {/* Coffee Products Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-12">
-                    {filteredProducts.map((product) => (
-                        <motion.div
-                            key={product.id}
-                            className="bg-gray-800 rounded-2xl overflow-hidden shadow-xl p-4 flex flex-col items-center transform transition-transform duration-300 hover:scale-105 hover:shadow-2xl"
-                            initial={{ opacity: 0, scale: 0.9 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            whileHover={{ rotateY: 10, rotateX: 5 }}
-                            transition={{ duration: 0.4 }}
-                        >
-                            <div className="relative w-full h-48 md:h-56 mb-4 perspective-1000">
-                                <motion.div
-                                    className="relative w-full h-full"
-                                    initial={{ rotateY: 0, rotateX: 0 }}
-                                    whileHover={{ rotateY: 15, rotateX: 10 }}
-                                    transition={{ duration: 0.6 }}
-                                >
-                                    <Image
-                                        src={product.image}
-                                        alt={product.title}
-                                        layout="fill"
-                                        objectFit="cover"
-                                        className="rounded-lg"
-                                    />
-                                </motion.div>
-                            </div>
-                            <h2 className="text-lg md:text-xl text-left w-full font-semibold mb-2 text-yellow-300">{product.title}</h2>
-                            <p className="text-gray-300 text-sm mb-2">{product.description}</p>
-                            {/* <p className="text-gray-400 text-xs mb-4">{product.ingredients.join(', ')}</p> */}
-                            <div className="flex justify-between items-center w-full mt-auto">
-                                {/* fav button  */}
-                                <motion.button
-                                    className={`bg-red-600 text-white px-3 py-1 rounded-full text-sm md:text-lg font-semibold transition-transform ${favorites.includes(product.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
-                                    onClick={() => handleAddToFavorites(product.id)}
-                                    whileHover={{ scale: 1.2, rotate: 10 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    disabled={favorites.includes(product.id)}
-                                >
-                                    <FaHeart size={16} />
-                                </motion.button>
-                                
-                                {/* cart add */}
-                                <motion.button
-                                    className={`bg-yellow-600 text-gray-900 px-3 py-1 rounded-full text-sm md:text-lg font-semibold transition-transform ${cart.includes(product.id) ? 'opacity-60 cursor-not-allowed' : ''}`}
-                                    onClick={() => handleAddToCart(product.id)}
-                                    whileHover={{ scale: 1.2, rotate: -10 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    disabled={cart.includes(product.id)}
-                                >
-                                    <FaShoppingCart size={16} />
-                                </motion.button>
-                            </div>
-                        </motion.div>
+                    {currentProducts.map((product) => (
+                        <CoffeeCard key={product.productId} product={product} />
                     ))}
+                </div>
+
+                {/* Pagination Controls */}
+                <div className="flex justify-between items-center mt-8">
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                        className="bg-gray-700 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+                        disabled={currentPage === 1}
+                    >
+                        Previous
+                    </button>
+                    <span className="text-lg">
+                        Page {currentPage} of {totalPages}
+                    </span>
+                    <button
+                        onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                        className="bg-gray-700 text-white px-4 py-2 rounded-lg disabled:opacity-50"
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                    </button>
                 </div>
             </div>
         </div>

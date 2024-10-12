@@ -1,14 +1,18 @@
-"use client"; 
+"use client";
 import { useState } from 'react';
 import { usePathname } from 'next/navigation'; // Correct hook for Next.js
 import { coffee0 } from '@/assets/Media';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaShoppingCart, FaHeart } from 'react-icons/fa';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/app/Redux/store';
 
 const CustomNavbar = () => {
+    const wishlist = useSelector((state: RootState) => state.wishlist.wishlist);
+    const cart = useSelector((state: RootState) => state.cart.cart);
     const [isOpen, setIsOpen] = useState(false);
-    const pathname = usePathname(); 
+    const pathname = usePathname();
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
@@ -35,6 +39,10 @@ const CustomNavbar = () => {
                             Products
                             {isActive('/ProductsPage') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
                         </Link>
+                        <Link href="/Profile" className={`relative transition duration-300 ${isActive('/Profile') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}>
+                            Profile
+                            {isActive('/Profile') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
+                        </Link>
                         <Link href="/ServicePage" className={`relative transition duration-300 ${isActive('/ServicePage') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}>
                             Services
                             {isActive('/ServicePage') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
@@ -42,6 +50,10 @@ const CustomNavbar = () => {
                         <Link href="/AboutPage" className={`relative transition duration-300 ${isActive('/AboutPage') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}>
                             About
                             {isActive('/AboutPage') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
+                        </Link>
+                        <Link href="/Auth" className={`relative transition duration-300 ${isActive('/Auth') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}>
+                            SignIn
+                            {isActive('/Auth') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
                         </Link>
                         <Link href="/ContactPage" className={`relative transition duration-300 ${isActive('/ContactPage') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}>
                             Contact
@@ -51,11 +63,21 @@ const CustomNavbar = () => {
 
                     {/* Cart and Favorite Icons */}
                     <div className="hidden md:flex items-center space-x-6">
-                        <Link href="/cart" className="hover:text-indigo-400 transition duration-300 group">
+                        <Link href="/CartPage" className="relative hover:text-indigo-400 transition duration-300 group">
                             <FaShoppingCart size={24} />
+                            {cart.length > 0 && (
+                                <span className="absolute top-[-8px] right-[-16px] bg-red-600 text-white text-xs rounded-full px-2 py-0">
+                                    {cart.length}
+                                </span>
+                            )}
                         </Link>
-                        <Link href="/favorites" className="hover:text-indigo-400 transition duration-300 group">
+                        <Link href="/FavoritePage" className="relative hover:text-indigo-400 transition duration-300 group">
                             <FaHeart size={24} />
+                            {wishlist.length > 0 && (
+                                <span className="absolute top-[-8px] right-[-16px] bg-red-600 text-white text-xs rounded-full px-2 py-0">
+                                    {wishlist.length}
+                                </span>
+                            )}
                         </Link>
                     </div>
 
@@ -78,6 +100,9 @@ const CustomNavbar = () => {
                         </Link>
                         <Link href="/ProductsPage" className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 hover:text-white ${isActive('/ProductsPage') ? 'bg-gray-800 text-white' : ''}`}>
                             Products
+                        </Link>
+                        <Link href="/Profile" className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 hover:text-white ${isActive('/Profile') ? 'bg-gray-800 text-white' : ''}`}>
+                            Profile
                         </Link>
                         <Link href="/ServicePage" className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 hover:text-white ${isActive('/ServicePage') ? 'bg-gray-800 text-white' : ''}`}>
                             Services
