@@ -22,7 +22,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 category VARCHAR(255) NOT NULL,
                 flavour VARCHAR(255),
                 description TEXT,
-                image VARCHAR(255),
+                image MEDIUMTEXT,
                 small DECIMAL(10, 2),
                 medium DECIMAL(10, 2),
                 large DECIMAL(10, 2),

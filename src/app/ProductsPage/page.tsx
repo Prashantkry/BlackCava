@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation'
 import { Coffee } from '../Modals/modal';
-import { coffeeData } from '@/assets/dummyData';
 import CoffeeCard from '@/components/CoffeeCard';
 
 // API URL

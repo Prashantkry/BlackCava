@@ -8,7 +8,7 @@ import { Coffee, cartCoffeeItem } from '@/app/Modals/modal';
 import { coffeeData } from '@/assets/dummyData';
 import { useState, useEffect } from 'react';
 
-const page = () => {
+const Page = () => {
   const cart = useSelector((state: RootState) => state.cart.cart);
   const [cartProducts, setCartProducts] = useState<Coffee[]>([]);
   const [isProccedToBuy, setProccedToBuy] = useState<boolean>(false);
@@ -23,7 +23,7 @@ const page = () => {
     cart.forEach(item => {
       const matchingCoffee = coffeeData.find(coffee => coffee.productId === item.productId);
       if (matchingCoffee) {
-        const matchingSize = matchingCoffee[item.size];
+        const matchingSize = item.size as keyof Coffee;
         coffeesInCart.push(matchingCoffee);
         coffeesForBill.push({
           productId:matchingCoffee.productId,
@@ -37,7 +37,7 @@ const page = () => {
     setCartProducts(coffeesInCart);
     setCartItems(coffeesForBill);
     const total = coffeesForBill.reduce((sum, item) => {
-      return sum + item.quantity * item.pricePerQuantity;
+      return sum + Number(item.quantity) * Number(item.pricePerQuantity);
     }, 0);
     setTotalAmount(total);
   }, [cart]);
@@ -92,7 +92,7 @@ const page = () => {
                 <span>{item.size}</span>
                 <span>{item.pricePerQuantity}</span>
                 <span>{item.quantity}</span>
-                <span>{item.pricePerQuantity * item.quantity}</span>
+                <span>{Number(item.pricePerQuantity) * Number(item.quantity)}</span>
               </div>
             ))}
             <div className="flex justify-between text-yellow-500 font-bold mt-6">
@@ -113,4 +113,4 @@ const page = () => {
   );
 }
 
-export default page
+export default Page

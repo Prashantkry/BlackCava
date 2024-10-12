@@ -20,14 +20,14 @@ const AddNewProduct: React.FC = () => {
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        setImagePreview(reader.result as string);
-        setValue('image', file.name);
+        const base64String = reader.result as string;
+        setImagePreview(base64String); 
+        setValue('image', base64String); 
       };
       reader.readAsDataURL(file);
     }
   };
 
-  // Submit callback function
   const handleFormSubmit = async (data: Coffee) => {
     if (!data.image) {
       console.log("image not found")
@@ -49,7 +49,7 @@ const AddNewProduct: React.FC = () => {
       console.log("api data => ", result)
       if (response.ok) {
         toast.success(result.message, { autoClose: 1500 });
-        reset(); // Reset form after success
+        reset();
       } else {
         toast.error('Failed to add product', { autoClose: 1500 });
       }
@@ -151,20 +151,6 @@ const AddNewProduct: React.FC = () => {
               )}
             />
             {errors.flavour && <p className="text-red-500 text-sm lg:text-base">{errors.flavour.message}</p>}
-
-            {/* <Controller
-              name="features"
-              control={control}
-              render={({ field }) => (
-                <input
-                  type="text"
-                  placeholder="Features (comma separated)"
-                  className="w-full p-2 border rounded-md"
-                  {...field}
-                />
-              )}
-            />
-            {errors.features && <p className="text-red-500 text-sm lg:text-base">{errors.features.message}</p>} */}
           </div>
         </div>
 

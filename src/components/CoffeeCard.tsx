@@ -17,6 +17,7 @@ interface CoffeeCardProps {
 }
 
 const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
+  console.log("CoffeeCard product => ", product) 
   const dispatch = useDispatch();
   const wishlist = useSelector((state: RootState) => state.wishlist.wishlist);
   const cart = useSelector((state: RootState) => state.cart.cart);
@@ -45,7 +46,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [cartItem]);
-  const handleSizeChange = (size: string) => {
+  const handleSizeChange = (size: 'small' | 'medium' | 'large') => {
     setSelectedSize(size);
     const newCartItem = cart.find((item) => item.productId === product.productId && item.size === size);
     if (newCartItem) {
@@ -81,7 +82,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
       className="bg-gray-800 rounded-2xl overflow-hidden shadow-xl p-4 flex flex-col items-center"
     >
       <div className="relative w-full h-48 md:h-56 mb-4">
-        <Image src={coffeeDummyImage} alt={product.name} fill style={{ objectFit: 'cover' }} />
+        <Image src={product.image || coffeeDummyImage} alt={product.name} className='rounded' fill style={{ objectFit: 'cover' }} />
       </div>
       <Link href={`/ProductDetails/${product.productId}`}>
       <h2 className="text-lg md:text-xl font-semibold mb-2 text-yellow-500">{product.name}</h2>

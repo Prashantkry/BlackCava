@@ -16,6 +16,9 @@ interface CartCoffeeCardProps {
 }
 
 const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
+  console.log("CartCoffeeCard -> item", item);
+  console.log("coffee => ", coffee);
+  
   const dispatch = useDispatch();
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string>("small");
@@ -125,7 +128,7 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
     >
       <div className="relative w-full sm:w-1/3 h-[30vh]">
         <Image
-          src={coffeeDummyImage}
+          src={coffee.image || coffeeDummyImage}
           alt={coffee.name}
           className="h-full object-center"
           layout="fill"
