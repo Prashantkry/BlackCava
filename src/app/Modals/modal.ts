@@ -5,9 +5,9 @@ export interface Coffee {
   description: string;
   category: string;
   flavour: string;
-  small: string;
-  medium: string;
-  large: string;
+  small: number;
+  medium: number;
+  large: number;
 }
 
 export interface cartCoffeeItem{
@@ -15,7 +15,7 @@ export interface cartCoffeeItem{
   name:string;
   size:string;
   quantity:number;
-  pricePerQuantity:string;
+  pricePerQuantity:number;
 }
 
 export interface Transaction {

@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation'
 import { Coffee } from '../Modals/modal';
 import CoffeeCard from '@/components/CoffeeCard';
 
-// API URL
 // const API_URL = 'https://api.sampleapis.com/coffee/hot';
 const API_URL = 'http://localhost:3000/api/products/getProducts';
 
@@ -31,10 +30,9 @@ const ProductsPage = () => {
                 const data = await response.json();
                 console.log('Raw response data:', data);
 
-                // Check if data is successful and set products accordingly
                 if (data.success = true) {
-                    setProducts(data.data); // Set products state
-                    setFilteredProducts(data.data); // Set filtered products for initial rendering
+                    setProducts(data.data);
+                    setFilteredProducts(data.data); 
                 } else {
                     console.error('Failed to fetch products:', data.message);
                 }
@@ -42,7 +40,6 @@ const ProductsPage = () => {
                 console.error('Error fetching products:', error);
             }
         };
-
         fetchProducts();
     }, []);
 

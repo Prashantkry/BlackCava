@@ -1,4 +1,4 @@
-"use client"; 
+"use client";
 
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -6,6 +6,7 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 
 const backendUrl: string = process.env.NEXT_PUBLIC_BackendUrl!;
+console.log("backendUrl => ", backendUrl)
 
 const Page = () => {
     const [email, setEmail] = useState("");
@@ -18,7 +19,7 @@ const Page = () => {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch(`${backendUrl}/contact`, {
+            const response = await fetch(`${backendUrl}/api/contact`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

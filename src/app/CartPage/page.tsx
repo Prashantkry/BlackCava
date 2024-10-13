@@ -1,55 +1,98 @@
 "use client";
-import { useSelector } from 'react-redux';
-import QRCode from 'qrcode';
-import Link from 'next/link';
-import { RootState } from '@/app/Redux/store';
-import CartCoffeeCard from '../../components/CartCoffeeCard';
-import { Coffee, cartCoffeeItem } from '@/app/Modals/modal';
-import { coffeeData } from '@/assets/dummyData';
-import { useState, useEffect } from 'react';
+import { useSelector } from "react-redux";
+import QRCode from "qrcode";
+import Link from "next/link";
+import { RootState } from "@/app/Redux/store";
+import CartCoffeeCard from "../../components/CartCoffeeCard";
+import { Coffee, cartCoffeeItem } from "@/app/Modals/modal";
+import { useState, useEffect } from "react";
+
+const API_URL = "http://localhost:3000/api/products/cartItem";
 
 const Page = () => {
   const cart = useSelector((state: RootState) => state.cart.cart);
+  const [products, setProducts] = useState<Coffee[]>([]);
   const [cartProducts, setCartProducts] = useState<Coffee[]>([]);
   const [isProccedToBuy, setProccedToBuy] = useState<boolean>(false);
   const [cartItems, setCartItems] = useState<cartCoffeeItem[]>([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const upiId = process.env.NEXT_PUBLIC_UPI_ID;
   const payeeName = process.env.NEXT_PUBLIC_PAYEE_NAME;
-  const [qrCodeUrl, setQrCodeUrl] = useState('');
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
   useEffect(() => {
-    const coffeesInCart: Coffee[] = [];
-    const coffeesForBill: cartCoffeeItem[] = [];
-    cart.forEach(item => {
-      const matchingCoffee = coffeeData.find(coffee => coffee.productId === item.productId);
-      if (matchingCoffee) {
-        const matchingSize = item.size as keyof Coffee;
-        coffeesInCart.push(matchingCoffee);
-        coffeesForBill.push({
-          productId:matchingCoffee.productId,
-          name: matchingCoffee.name,
-          size: matchingSize,
-          quantity: item.quantity,
-          pricePerQuantity: matchingCoffee[matchingSize]
-        });
-      }
-    });
-    setCartProducts(coffeesInCart);
-    setCartItems(coffeesForBill);
-    const total = coffeesForBill.reduce((sum, item) => {
-      return sum + Number(item.quantity) * Number(item.pricePerQuantity);
-    }, 0);
-    setTotalAmount(total);
+    const fetchAndProcessData = async () => {
+      const fetchProducts = async () => {
+        try {
+          const response = await fetch(API_URL, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          const data = await response.json();
+          console.log("Raw response data:", data);
+  
+          if (data.status === 200) {
+            console.log("data success => ",data.status)
+            console.log("cartItems => ",data.cartItems)
+            setCartProducts(data.cartItems);
+            return data.cartItems;
+          } else {
+            console.error("Failed to fetch products:", data.message);
+            return [];
+          }
+        } catch (error) {
+          console.error("Error fetching products:", error);
+          return [];
+        }
+      };
+  
+      const products:Coffee[] = await fetchProducts();
+      console.log("cartItems => ",products)
+      const coffeesInCart: Coffee[] = [];
+      console.log("coffeesInCart => ",coffeesInCart)
+      const coffeesForBill: cartCoffeeItem[] = [];
+      console.log("coffeesForBill => ",coffeesForBill)
+      cart.forEach((item) => {
+        const matchingCoffee = products.find(
+          (coffee:Coffee) => coffee.productId === item.productId
+        );
+        console.log("matchingCoffee => ",matchingCoffee)
+        if (matchingCoffee) {
+          const matchingSize = item.size as keyof Coffee;
+          coffeesInCart.push(matchingCoffee);
+          coffeesForBill.push({
+            productId: matchingCoffee.productId,
+            name: matchingCoffee.name,
+            size: matchingSize,
+            quantity: item.quantity,
+            pricePerQuantity: Number(matchingCoffee[matchingSize]),
+          });
+        }
+      });
+  
+      setCartProducts(coffeesInCart);
+      setCartItems(coffeesForBill);
+      const total = coffeesForBill.reduce((sum, item) => {
+        return sum + Number(item.quantity) * Number(item.pricePerQuantity);
+      }, 0);
+      setTotalAmount(total);
+    };
+    fetchAndProcessData();
   }, [cart]);
+  
 
   const generateQrCode = async () => {
     const paymentUrl = `upi://pay?pa=${upiId}&pn=${payeeName}&am=${totalAmount}&cu=INR`;
     try {
-      const url = await QRCode.toDataURL(paymentUrl,{errorCorrectionLevel:'H',type: 'image/jpeg',});
+      const url = await QRCode.toDataURL(paymentUrl, {
+        errorCorrectionLevel: "H",
+        type: "image/jpeg",
+      });
       setQrCodeUrl(url);
       setProccedToBuy(!isProccedToBuy);
     } catch (error) {
-      console.error('Error generating QR code:', error);
+      console.error("Error generating QR code:", error);
     }
   };
 
@@ -61,24 +104,32 @@ const Page = () => {
           {cart.length > 0 ? (
             <>
               {cartProducts.map((coffee, index) => (
-                <CartCoffeeCard key={index} coffee={coffee as Coffee} item={cartItems[index] as cartCoffeeItem} />
+                <CartCoffeeCard
+                  key={index}
+                  coffee={coffee as Coffee}
+                  item={cartItems[index] as cartCoffeeItem}
+                />
               ))}
               <button className="w-full mt-6 px-4 py-2 bg-blue-600 text-gray-200 rounded hover:bg-blue-700">
                 Add More Items
               </button>
             </>
           ) : (
-            <p className="text-gray-400"><p>Your cart is empty</p>
+            <div className="text-gray-400">
+              <p>Your cart is empty</p>
               <Link href="/ProductsPage">
                 <button className="px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 bg-yellow-500 text-black font-semibold rounded-full shadow-lg hover:bg-yellow-400 hover:shadow-xl transition-transform transform hover:scale-105 duration-300 focus:outline-none focus:ring-4 focus:ring-yellow-500">
-                  Explore Now</button>
+                  Explore Now
+                </button>
               </Link>
-            </p>
+            </div>
           )}
         </div>
         <div className="p-4 bg-gray-800 rounded-lg shadow-lg">
           <div>
-            <h2 className="text-xl font-bold mb-4 text-yellow-500">Bill Summary</h2>
+            <h2 className="text-xl font-bold mb-4 text-yellow-500">
+              Bill Summary
+            </h2>
             <div className="grid grid-cols-5 font-bold text-gray-300 mb-2">
               <span>Item</span>
               <span>Size</span>
@@ -87,30 +138,41 @@ const Page = () => {
               <span>Total</span>
             </div>
             {cartItems.map((item, index) => (
-              <div className="grid grid-cols-5 text-gray-300 gap-2 mb-4" key={index}>
+              <div
+                className="grid grid-cols-5 text-gray-300 gap-2 mb-4"
+                key={index}
+              >
                 <span>{item.name}</span>
                 <span>{item.size}</span>
                 <span>{item.pricePerQuantity}</span>
                 <span>{item.quantity}</span>
-                <span>{Number(item.pricePerQuantity) * Number(item.quantity)}</span>
+                <span>
+                  {Number(item.pricePerQuantity) * Number(item.quantity)}
+                </span>
               </div>
             ))}
             <div className="flex justify-between text-yellow-500 font-bold mt-6">
               <span>Total:</span>
               <span>${totalAmount.toFixed(2)}</span>
             </div>
-            <button className="w-full mt-6 px-4 py-2 bg-gradient-to-br from-yellow-300 to-yellow-500 text-gray-200 rounded" disabled={isProccedToBuy || totalAmount <= 0} onClick={() => generateQrCode()}>Proceed to Buy</button>
+            <button
+              className="w-full mt-6 px-4 py-2 bg-gradient-to-br from-yellow-300 to-yellow-500 text-gray-200 rounded"
+              disabled={isProccedToBuy || totalAmount <= 0}
+              onClick={() => generateQrCode()}
+            >
+              Proceed to Buy
+            </button>
           </div>
-          {qrCodeUrl && <div className='mt-4'>
-            <img src={qrCodeUrl} alt="UPI QR Code" className='mb-2 mx-auto'/>
-            <p className='text-center'>Scan and proceed payment</p>
-          
-          </div>}
-
+          {qrCodeUrl && (
+            <div className="mt-4">
+              <img src={qrCodeUrl} alt="UPI QR Code" className="mb-2 mx-auto" />
+              <p className="text-center">Scan and proceed payment</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
   );
-}
+};
 
-export default Page
+export default Page;
