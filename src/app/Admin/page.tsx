@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import Users from '@/components/Admin/Users';
 import Transactions from '@/components/Admin/AdminTransactions';
+import AdminProductTable from '@/components/Admin/AdminProduct';
 import Sidebar from '@/components/Admin/Sidebar';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Dashboard from '@/components/Admin/AdminDashboard';
@@ -26,7 +27,9 @@ const AdminPage:React.FC<{ children: React.ReactNode }> = ({ children }) => {
         // return <Testimonials />;
       case 'Transactions':
         return <Transactions />;
-        case 'Products':
+      case 'Products':
+        return <AdminProductTable />;
+      case 'AddNewProduct':
         return <AddNewProduct />;
       default:
         return <Dashboard />
