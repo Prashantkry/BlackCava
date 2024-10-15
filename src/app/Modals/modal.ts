@@ -45,3 +45,15 @@ export interface user{
   pinCode: string;
   profile: string; 
 }
+
+export interface Transaction {
+  transactionId: string;
+  orderId: number;
+  username: string;
+  userId:string;
+  items: cartCoffeeItem[];
+  totalAmount: number;
+  date: string;
+  orderDelivered: boolean;
+  isFavorite:boolean;
+}

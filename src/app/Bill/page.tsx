@@ -8,7 +8,6 @@ const Bill = () => {
     const [order, setOrder] = useState<Transaction | null>(null);
 
     useEffect(() => {
-        // Assuming you want to use the first transaction
         if (transactionsData.length > 0) {
             const details = transactionsData[0];
             setOrder(details);
