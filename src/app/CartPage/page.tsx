@@ -1,15 +1,20 @@
 "use client";
-import { useSelector } from "react-redux";
+import withAuth from '@/utils/withAuth';
+import { useDispatch, useSelector } from "react-redux";
 import QRCode from "qrcode";
 import Link from "next/link";
 import { RootState } from "@/app/Redux/store";
 import CartCoffeeCard from "../../components/CartCoffeeCard";
 import { Coffee, cartCoffeeItem } from "@/app/Modals/modal";
 import { useState, useEffect } from "react";
+import { addToCart, CartItem } from '../Redux/cartSlice';
 
 const API_URL = "http://localhost:3000/api/products/cartItem";
+const API_URL_P = "http://localhost:3000/api/products/getProducts";
+const API_URL_C = "http://localhost:3000/api/payment";
 
 const Page = () => {
+  const dispatch = useDispatch();
   const cart = useSelector((state: RootState) => state.cart.cart);
   const [products, setProducts] = useState<Coffee[]>([]);
   const [cartProducts, setCartProducts] = useState<Coffee[]>([]);
@@ -19,9 +24,32 @@ const Page = () => {
   const upiId = process.env.NEXT_PUBLIC_UPI_ID;
   const payeeName = process.env.NEXT_PUBLIC_PAYEE_NAME;
   const [qrCodeUrl, setQrCodeUrl] = useState("");
+
   useEffect(() => {
     const fetchAndProcessData = async () => {
       const fetchProducts = async () => {
+        try {
+          const response = await fetch(API_URL_P, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          });
+          const data = await response.json();
+          // console.log('Raw response data:', data);
+
+          if (data.success = true) {
+            setProducts(data.data);
+            return data.data;
+          } else {
+            console.error('Failed to fetch products:', data.message);
+          }
+        } catch (error) {
+          console.error('Error fetching products:', error);
+        }
+      };
+
+      const fetchCart = async () => {
         try {
           const response = await fetch(API_URL, {
             method: "GET",
@@ -30,15 +58,15 @@ const Page = () => {
             },
           });
           const data = await response.json();
-          console.log("Raw response data:", data);
-  
+          // console.log("Raw response data:", data);
+
           if (data.status === 200) {
-            console.log("data success => ",data.status)
-            console.log("cartItems => ",data.cartItems)
+            // console.log("data success => ", data.status)
+            // console.log("cartItems => ", data.cartItems)
             setCartProducts(data.cartItems);
             return data.cartItems;
           } else {
-            console.error("Failed to fetch products:", data.message);
+            // console.error("Failed to fetch products:", data.message);
             return [];
           }
         } catch (error) {
@@ -46,31 +74,39 @@ const Page = () => {
           return [];
         }
       };
-  
-      const products:Coffee[] = await fetchProducts();
-      console.log("cartItems => ",products)
+
+      const productData = await fetchProducts();
+      const cartData = await fetchCart();
+      // console.log("productData => ", productData, "cartData => ", cartData)
+
       const coffeesInCart: Coffee[] = [];
-      console.log("coffeesInCart => ",coffeesInCart)
       const coffeesForBill: cartCoffeeItem[] = [];
-      console.log("coffeesForBill => ",coffeesForBill)
-      cart.forEach((item) => {
-        const matchingCoffee = products.find(
-          (coffee:Coffee) => coffee.productId === item.productId
+
+      cartData.forEach((item: CartItem) => {
+        const matchingCoffee = productData.find(
+          (coffee: Coffee) => coffee.productId === item.productId
         );
-        console.log("matchingCoffee => ",matchingCoffee)
+        // console.log("matchingCoffee => ", matchingCoffee)
         if (matchingCoffee) {
+          if (customerId) {
+            dispatch(addToCart({ ...item, userId: customerId }));
+          } else {
+            console.error("Customer ID is null");
+          }
           const matchingSize = item.size as keyof Coffee;
+          // console.log("matchingSize => ", matchingSize)
           coffeesInCart.push(matchingCoffee);
+
           coffeesForBill.push({
             productId: matchingCoffee.productId,
             name: matchingCoffee.name,
             size: matchingSize,
             quantity: item.quantity,
-            pricePerQuantity: Number(matchingCoffee[matchingSize]),
+            pricePerQuantity: Number(matchingCoffee[matchingSize.toLowerCase()]),
           });
         }
       });
-  
+
       setCartProducts(coffeesInCart);
       setCartItems(coffeesForBill);
       const total = coffeesForBill.reduce((sum, item) => {
@@ -80,20 +116,28 @@ const Page = () => {
     };
     fetchAndProcessData();
   }, [cart]);
-  
 
-  const generateQrCode = async () => {
-    const paymentUrl = `upi://pay?pa=${upiId}&pn=${payeeName}&am=${totalAmount}&cu=INR`;
-    try {
-      const url = await QRCode.toDataURL(paymentUrl, {
-        errorCorrectionLevel: "H",
-        type: "image/jpeg",
-      });
-      setQrCodeUrl(url);
-      setProccedToBuy(!isProccedToBuy);
-    } catch (error) {
-      console.error("Error generating QR code:", error);
-    }
+  const publicKey =
+    "pk_test_51OUipuSD6rEtgA3HR4Yb5I0b10ADtBgl6owKQJmZLFxQiBkdVKPUvGQiJcizlvyXgU3QnsThHOpYDSaEDzWKOsfE00YXM24aQr";
+  const customerId = localStorage.getItem("customerId");
+  const checkoutPlan = async () => {
+    const pay = await fetch(`${API_URL_C}`, {
+      method: "post",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        cartItems,
+        customerId,
+      }),
+    });
+    const paymentDetails = await pay.json();
+    // console.log(paymentDetails);
+
+
+    const sessionURl = await paymentDetails.session.url;
+    // console.log(sessionURl)
+    window.location.href = sessionURl
   };
 
   return (
@@ -101,14 +145,18 @@ const Page = () => {
       <div className="container mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 overflow-y-auto max-h-screen no-scrollbar">
           <h1 className="text-2xl font-bold mb-4 text-yellow-500">Your Cart</h1>
-          {cart.length > 0 ? (
+          {/* {cart.length > 0 ? ( */}
+          {cartProducts ? (
             <>
+              {/* {console.log("cartProducts => ", cartProducts)} */}
               {cartProducts.map((coffee, index) => (
-                <CartCoffeeCard
-                  key={index}
-                  coffee={coffee as Coffee}
-                  item={cartItems[index] as cartCoffeeItem}
-                />
+                <>
+                  <CartCoffeeCard
+                    key={index}
+                    coffee={coffee as Coffee}
+                    item={cartItems[index] as cartCoffeeItem}
+                  />
+                </>
               ))}
               <button className="w-full mt-6 px-4 py-2 bg-blue-600 text-gray-200 rounded hover:bg-blue-700">
                 Add More Items
@@ -125,7 +173,8 @@ const Page = () => {
             </div>
           )}
         </div>
-        <div className="p-4 bg-gray-800 rounded-lg shadow-lg">
+        {/* Bill section  */}
+        <div className="p-4 bg-gray-800 h-fit rounded-lg shadow-lg">
           <div>
             <h2 className="text-xl font-bold mb-4 text-yellow-500">
               Bill Summary
@@ -158,21 +207,15 @@ const Page = () => {
             <button
               className="w-full mt-6 px-4 py-2 bg-gradient-to-br from-yellow-300 to-yellow-500 text-gray-200 rounded"
               disabled={isProccedToBuy || totalAmount <= 0}
-              onClick={() => generateQrCode()}
+              onClick={checkoutPlan}
             >
               Proceed to Buy
             </button>
           </div>
-          {qrCodeUrl && (
-            <div className="mt-4">
-              <img src={qrCodeUrl} alt="UPI QR Code" className="mb-2 mx-auto" />
-              <p className="text-center">Scan and proceed payment</p>
-            </div>
-          )}
         </div>
       </div>
     </div>
   );
 };
 
-export default Page;
+export default withAuth(Page);

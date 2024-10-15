@@ -9,135 +9,208 @@ import { userData } from '@/assets/dummyData';
 import { SubmitHandler } from 'react-hook-form';
 import userDummyImage from "@/assets/userDummyImage.webp";
 import usePasswordHook from '@/hooks/usePasswordHook';
-import { Coffee, Transaction, cartCoffeeItem } from '../Modals/modal';
-import { addToCart, clearCart } from '../Redux/cartSlice';
+import { Coffee, cartCoffeeItem } from '../Modals/modal';
+import { addToCart, CartItem, clearCart } from '../Redux/cartSlice';
 import { toast } from 'react-toastify';
 import { generateBill } from '@/lib/generateBill';
+import Skeleton from 'react-loading-skeleton'; // Import Skeleton from the library
+import 'react-loading-skeleton/dist/skeleton.css';
+
+interface orderCartData {
+
+}
+
+export interface Transaction {
+    transactionId: string;
+    stripeSessionId: string;
+    userId: string;
+    username: string;
+    cartItems: orderCartData;
+    totalAmount: number;
+    createdAt: string;
+    orderDelivered: boolean;
+    isFavorite: boolean;
+}
+
 const Profile = () => {
-    const { register: registerUser, handleSubmit: handleUserSubmit, formState: { errors: userErrors }, setValue } = useUserDetailsHook();
+    const { register: registerUser, handleSubmit: handleUserSubmit, formState: { errors: userErrors }, setValue, clearErrors } = useUserDetailsHook();
     const { register: changePassword, handleSubmit: handlePassword, formState: { errors: passwordErrors }, watch } = usePasswordHook();
-    const dispatch = useDispatch();
-    const [selectedTab, setSelectedTab] = useState<"Delivered" | "Pending" | "Favorites">("Delivered");
     const [allTransactions, setAllTransactions] = useState<Transaction[]>();
     const [filteredOrders, setFilteredOrders] = useState<Transaction[]>();
     const [openDetails, setOpenDetails] = useState<string | null>(null);
-    const [user, setUser] = useState(userData[0]);
+    const [user, setUser] = useState<any>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [isChangePassword, setIsChangePassword] = useState(false);
-    const [photo, setPhoto] = useState(user.profile);
+    const [photo, setPhoto] = useState<string | null>(null);
     const [coffeeProducts, setCoffeeProducts] = useState<Coffee[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [backendPic, setBackendPic] = useState("")
 
+    const userId = localStorage.getItem("customerId")!;
+
+    // console.log("userId", userId)
 
     useEffect(() => {
-        setValue('firstName', user.firstName);
-        setValue('lastName', user.lastName);
-        setValue('addressLine1', user.addressLine1);
-        setValue('addressLine2', user.addressLine2);
-        setValue('city', user.city);
-        setValue('state', user.state);
-        setValue('gender', user.gender);
-        setValue('email', user.email);
-        setValue('pinCode', user.pinCode);
-        setValue('middleName', user.middleName);
-        setValue('phoneNumber', user.phoneNumber);
-        setCoffeeProducts(coffeeData);
-        setAllTransactions(transactionsData);
+        const fetchUserDetails = async () => {
+            const response = await fetch(`/api/users/oneUser?id=${userId}`);
+            const data = await response.json();
+            // console.log("data => ", data)
+            if (response.ok) {
+                setUser(data);
+                setValue('name', data.data.name);
+                setValue('addressLine1', data.data.addressLine1);
+                setValue('city', data.data.city);
+                setValue('email', data.data.email);
+                setValue('pinCode', data.data.pinCode);
+                setValue('phoneNumber', data.data.phoneNumber);
+                setPhoto(data.data.profilePic || userDummyImage);
+            }
+            setLoading(false)
+        };
+        fetchUserDetails();
     }, []);
 
     useEffect(() => {
-        filterOrder();
-    }, [selectedTab, allTransactions]);
+        if (userId) {
+            fetchOrderDetails(userId);
+        }
+    }, [userId]);
 
+    // ! profile pic change 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files) {
             const file = e.target.files[0];
             const reader = new FileReader();
-            reader.onloadend = () => {
+            reader.onload = () => {
+                const base64String = reader.result as string;
                 setPhoto(reader.result as string);
+                setBackendPic(base64String);
             };
             reader.readAsDataURL(file);
         }
     };
 
-    const filterOrder = () => {
-        let selectedOrders: Transaction[] = [];
-        if (allTransactions?.length) {
-            if (selectedTab !== "Favorites") {
-                selectedOrders = allTransactions.filter((order) =>
-                    selectedTab === "Delivered" ? order.orderDelivered : !order.orderDelivered
-                );
-            } else {
-                selectedOrders = allTransactions.filter((order) => order.isFavorite);
-            }
-        }
-        setFilteredOrders(selectedOrders);
-    };
+    const fetchOrderDetails = async (customerId: string) => {
+        try {
+            const response = await fetch(`/api/getOrders?customerId=${customerId}`);
+            const result = await response.json();
+            console.log("order data => ", result);
 
-    const savePassword: SubmitHandler<any> = (data) => {
-        console.log(data);
-    }
+            if (response.ok && result.success) {
+                // Parsing the cartItems field
+                const ordersWithParsedItems = result.data.map((order: any) => ({
+                    ...order,
+                    cartItems: JSON.parse(order.cartItems),
+                }));
+
+                setAllTransactions(ordersWithParsedItems);
+                console.log("ordersWithParsedItems => ", ordersWithParsedItems)
+            } else {
+                console.error('Failed to fetch orders:', result.message);
+            }
+        } catch (error) {
+            console.error('Error fetching orders:', error);
+        }
+    };
 
     const handleEditToggle = () => {
         setIsEditing(!isEditing);
+        clearErrors();
     };
 
-    const onSubmit: SubmitHandler<any> = (data) => {
-        setUser({ ...user, ...data });
-        setIsEditing(false);
-    };
-
-    const handleToggleDetails = (transactionId: string) => {
-        setOpenDetails(openDetails === transactionId ? null : transactionId);
-    };
-
-    const handleRepeatOrder = (items: cartCoffeeItem[]) => {
-        dispatch(clearCart());
-        items.map((item) => {
-            const currentProduct = coffeeProducts.find(
-                (product) => product.productId === item.productId
-            );
-            if (currentProduct) {
-                const currentSize = currentProduct.sizes.find(
-                    (size) => size.size === item.size
-                );
-                if (currentSize) {
-                    dispatch(addToCart({ productId: currentProduct.productId, size: currentSize.size, quantity: item.quantity }));
-                }
-            }
-        });
-        toast.success(`items added from this order to cart`, { autoClose: 1500 });
-        toast.warning(`items price may have changed from current order price`);
-    };
-
-    const setVisibleTab = (tabName: "Delivered" | "Pending" | "Favorites") => {
-        if (selectedTab !== tabName) {
-            setOpenDetails(null);
-            setSelectedTab(tabName);
+    // ! update user data
+    const onSubmit: SubmitHandler<any> = async (data) => {
+        const { name, email, phoneNumber, addressLine1, city, state, pinCode } = data;
+        const userData = {
+            name,
+            email,
+            phoneNumber,
+            addressLine1,
+            city,
+            state,
+            pinCode,
+            profilePic: backendPic,
         }
-    }
+        try {
+            const response = await fetch(`/api/users/oneUser`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userData, customerId: userId })
+            });
 
-    const toggleOrderFavorite = (transactionId: string) => {
-        const updatedTransactions = allTransactions?.map((order) => {
-            if (order.transactionId === transactionId) {
-                const isFavorite = !order.isFavorite;
-                toast.success(`Order ${isFavorite ? 'added to' : 'removed from'} favorites`, { autoClose: 1500 });
-                return { ...order, isFavorite };
+            if (!response.ok) {
+                throw new Error('Failed to update user details');
             }
-            return order;
-        });
-        setAllTransactions(updatedTransactions);
-        filterOrder(); 
+
+            const result = await response.json();
+            toast.success("User details updated successfully");
+            setUser({ ...user, ...data });
+            setIsEditing(false);
+        } catch (error) {
+            console.error(error);
+            toast.error("Error updating user details");
+        }
     };
+
+    // ! reset password 
+    const savePassword: SubmitHandler<any> = async (data) => {
+        // console.log("save pass => ", data);
+        const passD = data;
+        try {
+            const pass = await fetch(`http://localhost:3000/api/users/oneUser`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ passD: passD.newPassword, customerId: userId })
+            });
+
+            const updatedPass = await pass.json();
+            // console.log("updatedPass => ", updatedPass);
+
+            if (updatedPass.success) {
+                toast.success("Password updated successfully!");
+            } else {
+                toast.error(updatedPass.message || "Failed to update password");
+            }
+
+        } catch (error) {
+            console.error("Error updating password:", error);
+            toast.error("An error occurred while updating password");
+        }
+    };
+
+
+    // ! copy order id to clipboard
+    const handleCopyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text)
+            .then(() => {
+                alert('Order ID copied to clipboard!');
+            })
+            .catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+    };
+
 
     return (
         <div className="min-h-screen bg-gray-900 text-white py-16 px-4">
             <div className="container mx-auto text-tiny md:text-base">
+                {/* fetch profile data */}
                 <div className="flex flex-col bg-gray-600 p-4 md:pt-6 gap-2 md:gap-4 text-black rounded-lg md: md:flex-row">
                     <div className="flex flex-col items-center justify-items-center gap-2 md:gap-4 md:w-1/3 lg:w-1/4">
-                        <Image src={photo || userDummyImage} alt="User Photo" className="w-32 h-32 rounded-full" />
+                        {
+                            loading ? (
+                                <Skeleton circle={true} height={128} width={128} />
+                            ) : (
+                                <Image src={photo || userDummyImage} alt="User Photo" width={128} height={128} className="rounded-full" />
+                            )
+                        }
                         <input type="file" onChange={handlePhotoChange} className="hidden" id="photoInput" />
                         <label htmlFor="photoInput" className="cursor-pointer text-yellow-500 font-medium">Change Photo</label>
-                        {isChangePassword &&
+                        {isChangePassword && !loading &&
                             <form onSubmit={handlePassword(savePassword)} className='pl-4'>
                                 <div className='flex items-center justify-items-center flex-col gap-2 md:gap-4'>
                                     <input type="password" placeholder="New Password"
@@ -175,52 +248,41 @@ const Profile = () => {
                     <div className="md:w-2/3 lg:w-3/4">
                         <form onSubmit={handleUserSubmit(onSubmit)} className='grid grid-cols-1 gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3'>
                             <div className="flex flex-col">
-                                <label htmlFor="firstName" className='text-yellow-500 font-medium'>First Name:</label>
-                                <input
-                                    type="text"
-                                    {...registerUser('firstName', { required: 'Required Field' })}
-                                    className={`border bg-gray-300 p-1 pl-2 md:p-2 rounded-lg ${userErrors.firstName ? 'border-red-500' : 'border-gray-300'}`}
-                                />
-                                {userErrors.firstName && <span className="text-red-500">{userErrors.firstName.message}</span>}
-                            </div>
-
-                            <div className="flex flex-col">
-                                <label htmlFor="middleName" className='text-yellow-500 font-medium'>Middle Name:</label>
-                                <input
-                                    type="text"
-                                    {...registerUser('middleName')}
-                                    className="border p-1 pl-2 md:p-2 bg-gray-300 border-gray-300 rounded-lg"
-                                />
-                            </div>
-
-                            <div className="flex flex-col">
-                                <label htmlFor="lastName" className='text-yellow-500 font-medium'>Last Name:</label>
-                                <input
-                                    type="text"
-                                    {...registerUser('lastName', { required: 'Required Field' })}
-                                    className={`border p-1 pl-2 md:p-2 bg-gray-300  rounded-lg ${userErrors.lastName ? 'border-red-500' : 'border-gray-300'}`}
-                                />
-                                {userErrors.lastName && <span className="text-red-500">{userErrors.lastName.message}</span>}
+                                <label htmlFor="name" className='text-yellow-500 font-medium'>Name:</label>
+                                {loading ? (
+                                    <Skeleton width={200} height={35} />
+                                ) : (
+                                    <input
+                                        type="text" disabled={!isEditing}
+                                        {...registerUser('name')}
+                                        className={`border bg-gray-300 p-1 pl-2 md:p-2 rounded-lg ${userErrors.name ? 'border-red-500' : 'border-gray-300'}`}
+                                    />
+                                )}
+                                {userErrors.name && <span className="text-red-500">{userErrors.name.message}</span>}
                             </div>
 
                             <div className="flex flex-col">
                                 <label htmlFor="email" className='text-yellow-500 font-medium'>Email:</label>
-                                <input
-                                    type="text"
-                                    {...registerUser('email', { required: 'Required Field', pattern: { value: /^[^@ ]+@[^@ ]+\.[^@ .]{2,}$/, message: 'Email is not valid' } })}
-                                    readOnly
-                                    className="border p-1 pl-2 md:p-2 bg-gray-300 border-gray-300 rounded-lg bg-gray-200"
-                                />
+                                {loading ? (
+                                    <Skeleton width={200} height={35} />
+                                ) : (
+                                    <input
+                                        type="text" disabled={!isEditing}
+                                        {...registerUser('email', { required: 'Required Field', pattern: { value: /^[^@ ]+@[^@ ]+\.[^@ .]{2,}$/, message: 'Email is not valid' } })}
+                                        readOnly
+                                        className="border p-1 pl-2 md:p-2 bg-gray-300 border-gray-300 rounded-lg "
+                                    />
+                                )}
                                 {userErrors.email && <span className="text-red-500">{userErrors.email.message}</span>}
                             </div>
 
                             <div className="flex flex-col">
                                 <label htmlFor="phoneNumber" className='text-yellow-500 font-medium'>Phone Number:</label>
                                 <input
-                                    type="text"
+                                    type="text" disabled={!isEditing}
                                     {...registerUser('phoneNumber', {
                                         required: 'Required Field', pattern: {
-                                            value: /^[789]\d{9}$/, // Regex for Indian phone numbers
+                                            value: /^[789]\d{9}$/,
                                             message: 'Please enter valid number',
                                         },
                                     })}
@@ -230,43 +292,20 @@ const Profile = () => {
                             </div>
 
                             <div className="flex flex-col">
-                                <label className='text-yellow-500 font-medium'>Gender:</label>
-                                <div className="flex items-center">
-                                    <label className="mr-4">
-                                        <input type="radio" value="Male" {...registerUser('gender')} className="mr-1" />
-                                        Male
-                                    </label>
-                                    <label>
-                                        <input type="radio" value="Female" {...registerUser('gender')} className="mr-1" />
-                                        Female
-                                    </label>
-                                </div>
-                            </div>
-
-                            <div className="flex flex-col">
                                 <label htmlFor="addressLine1" className='text-yellow-500 font-medium'>Address Line 1:</label>
                                 <input
-                                    type="text"
-                                    {...registerUser('addressLine1', { required: 'Required Field' })}
+                                    type="text" disabled={!isEditing}
+                                    {...registerUser('addressLine1')}
                                     className={`border p-1 pl-2 md:p-2 bg-gray-300 rounded-lg ${userErrors.addressLine1 ? 'border-red-500' : 'border-gray-300'}`}
                                 />
                                 {userErrors.addressLine1 && <span className="text-red-500">{userErrors.addressLine1.message}</span>}
                             </div>
 
                             <div className="flex flex-col">
-                                <label htmlFor="addressLine2" className='text-yellow-500 font-medium'>Address Line 2:</label>
-                                <input
-                                    type="text"
-                                    {...registerUser('addressLine2')}
-                                    className="border p-1 pl-2 md:p-2 bg-gray-300 rounded-lg border-gray-300"
-                                />
-                            </div>
-
-                            <div className="flex flex-col">
                                 <label htmlFor="city" className='text-yellow-500 font-medium'>City:</label>
                                 <input
-                                    type="text"
-                                    {...registerUser('city', { required: 'Required Field' })}
+                                    type="text" disabled={!isEditing}
+                                    {...registerUser('city')}
                                     className={`border p-1 pl-2 md:p-2 bg-gray-300 rounded-lg ${userErrors.city ? 'border-red-500' : 'border-gray-300'}`}
                                 />
                                 {userErrors.city && <span className="text-red-500">{userErrors.city.message}</span>}
@@ -275,8 +314,8 @@ const Profile = () => {
                             <div className="flex flex-col">
                                 <label htmlFor="state" className='text-yellow-500 font-medium'>State:</label>
                                 <input
-                                    type="text"
-                                    {...registerUser('state', { required: 'Required Field' })}
+                                    type="text" disabled={!isEditing}
+                                    {...registerUser('state')}
                                     className={`border p-1 pl-2 md:p-2 bg-gray-300 rounded-lg ${userErrors.state ? 'border-red-500' : 'border-gray-300'}`}
                                 />
                                 {userErrors.state && <span className="text-red-500">{userErrors.state.message}</span>}
@@ -285,7 +324,7 @@ const Profile = () => {
                             <div className="flex flex-col">
                                 <label htmlFor="pinCode" className='text-yellow-500 font-medium'>Pincode:</label>
                                 <input
-                                    type="text"
+                                    type="text" disabled={!isEditing}
                                     {...registerUser('pinCode', {
                                         required: 'Pincode is required', pattern: {
                                             value: /^[1-9][0-9]{5}$/,
@@ -312,121 +351,94 @@ const Profile = () => {
                         </form>
                     </div>
                 </div>
-                <div className="p-4 mt-2 md:mt-4 bg-gray-600 rounded-lg text-xs md:text-base">
-                    {/* Tab Links */}
-                    <div className="flex space-x-4">
-                        <button
-                            className={`relative px-4 py-2 ${selectedTab === "Delivered" ? "text-yellow-500" : "text-white"
-                                }`}
-                            onClick={() => setVisibleTab("Delivered")}
-                        >
-                            Delivered Orders
-                            <span
-                                className={`absolute left-0 bottom-0 h-[2px] bg-indigo-500 transition-all duration-300 ease-in-out ${selectedTab === "Delivered" ? "w-full" : "w-0"
-                                    }`}
-                            />
-                        </button>
-                        <button
-                            className={`relative px-4 py-2 ${selectedTab === "Pending" ? "text-yellow-500" : "text-white"
-                                }`}
-                            onClick={() => setVisibleTab("Pending")}
-                        >
-                            Pending Orders
-                            <span
-                                className={`absolute left-0 bottom-0 h-[2px] bg-indigo-500 transition-all duration-300 ease-in-out ${selectedTab === "Pending" ? "w-full" : "w-0"
-                                    }`}
-                            />
-                        </button>
-                        <button
-                            className={`relative px-4 py-2 ${selectedTab === "Favorites" ? "text-yellow-500" : "text-white"
-                                }`}
-                            onClick={() => setVisibleTab("Favorites")}
-                        >
-                            Favorites Orders
-                            <span
-                                className={`absolute left-0 bottom-0 h-[2px] bg-indigo-500 transition-all duration-300 ease-in-out ${selectedTab === "Favorites" ? "w-full" : "w-0"
-                                    }`}
-                            />
-                        </button>
-                    </div>
 
-                    {/* Order Table */}
-                    <div className="mt-4">
-                        <table className="w-full border-collapse">
+                {/* fetch orders data */}
+                <div className="p-4 mt-2 md:mt-4 bg-gray-600 rounded-lg text-xs md:text-base">
+                    <p className="relative px-4 py-2 text-yellow-500">
+                        Orders Details
+                        <span className="absolute left-0 bottom-0 h-[2px] bg-indigo-500 transition-all duration-300 ease-in-out w-full" />
+                    </p>
+
+                    <div className="mt-4 overflow-x-auto">
+                        <table className="min-w-full border-collapse bg-gray-800 text-white">
                             <thead>
                                 <tr className="bg-gray-900 text-yellow-500">
-                                    <th className="border py-2 text-center">Order ID</th>
-                                    <th className="border py-2 text-center">Order Date</th>
-                                    <th className="border py-2 text-center">Total</th>
-                                    <th className="border py-2 text-center">Repeat</th>
-                                    <th className="border py-2 text-center">Details</th>
-                                    <th className="border py-2 text-center">Favorite</th>
+                                    <th className="border-b-2 border-gray-700 py-3 text-left px-4">Order ID</th>
+                                    <th className="border-b-2 border-gray-700 py-3 text-left px-4">Order Date</th>
+                                    <th className="border-b-2 border-gray-700 py-3 text-left px-4">Coffee</th>
+                                    <th className="border-b-2 border-gray-700 py-3 text-left px-4">Quantity</th>
+                                    <th className="border-b-2 border-gray-700 py-3 text-left px-4">Size</th>
+                                    <th className="border-b-2 border-gray-700 py-3 text-left px-4">Total</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                {filteredOrders?.length && filteredOrders.map((order) => (
-                                    <React.Fragment key={order.transactionId}>
-                                        <tr>
-                                            <td className="border py-2 text-center">{order.orderId}</td>
-                                            <td className="border py-2 text-center">{order.date}</td>
-                                            <td className="border py-2 text-center">${order.totalAmount}</td>
-                                            <td className="border py-2 text-center">
-                                                <button
-                                                    className="bg-yellow-500 text-white px-1 md:px-3 py-1 rounded"
-                                                    onClick={() => handleRepeatOrder(order.items)}
+                            <tbody className="bg-gray-700">
+                                {allTransactions && allTransactions.length ? (
+                                    allTransactions.map((order: Transaction) => (
+                                        <React.Fragment key={order.transactionId}>
+                                            <tr className="hover:bg-gray-600 transition-colors text-left duration-200">
+                                                <td
+                                                    className="border-b border-gray-600 py-2 px-4 max-w-[2vw] overflow-hidden cursor-pointer"
+                                                    onClick={() => handleCopyToClipboard(order.stripeSessionId)}
+                                                    title="Click to copy Order ID"
                                                 >
-                                                    Repeat
-                                                </button>
-                                            </td>
-                                            <td className="border py-2 text-center">
-                                                <button
-                                                    className="bg-gray-300 px-3 py-1 rounded"
-                                                    onClick={() => handleToggleDetails(order.transactionId)}
-                                                >
-                                                    {openDetails === order.transactionId ? "▲" : "▼"}
-                                                </button>
-                                            </td>
-                                            <td className="border py-3 flex items-center justify-center">
-                                                <button onClick={() => toggleOrderFavorite(order.transactionId)}>
-                                                    <FaHeart size={24} fill={order.isFavorite ? 'red' : 'white'} />
-                                                </button>
-                                            </td>
-                                        </tr>
-
-                                        {/* Order Details */}
-                                        {openDetails === order.transactionId && (
-                                            <>
-                                                <tr className='border border-b-0'>
-                                                    <td colSpan={6} className="px-2 md:px-4 py-2">
-                                                        <div className="text-left">
-                                                            <strong>Order Details:</strong>
-                                                            <ul className="list-disc pl-5">
-                                                                {order.items.map((item, idx) => (
-                                                                    <li key={item.productId}>
-                                                                        {item.name} - {item.size[0]} | Qty: {item.quantity} | Price: $
-                                                                        {item.pricePerQuantity * item.quantity}
-                                                                    </li>
-                                                                ))}
-                                                            </ul>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                                <tr className='border border-t-0'>
-                                                    <td colSpan={6} className="px-2 md:px-4 py-2">
-                                                        <button className='bg-yellow-500 text-white px-1 md:px-3 py-1 rounded' onClick={() => generateBill(order)}>Generate Bill</button>
-                                                    </td>
-                                                </tr>
-                                            </>
-                                        )}
-                                    </React.Fragment>
-                                ))}
+                                                    {order.stripeSessionId.split('_').slice(0, 4).join('_') + (order.stripeSessionId.split('_').length > 4 ? '...' : '')}
+                                                </td>
+                                                <td className="border-b border-gray-600 py-2 px-4">
+                                                    {new Date(order.createdAt).toLocaleString([], {
+                                                        year: 'numeric',
+                                                        month: '2-digit',
+                                                        day: '2-digit',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                        hour12: false
+                                                    })}
+                                                </td>
+                                                <td className="border-b border-gray-600 py-2 px-4">
+                                                    {order.cartItems && Array.isArray(order.cartItems) ? (
+                                                        order.cartItems.map(item => item.name).join(', ')
+                                                    ) : (
+                                                        ''
+                                                    )}
+                                                </td>
+                                                <td className="border-b border-gray-600 py-2 px-4">
+                                                    {order.cartItems && Array.isArray(order.cartItems) ? (
+                                                        order.cartItems.map(item => item.quantity).join(', ')
+                                                    ) : (
+                                                        0
+                                                    )}
+                                                </td>
+                                                <td className="border-b border-gray-600 py-2 px-4">
+                                                    {order.cartItems && Array.isArray(order.cartItems) ? (
+                                                        order.cartItems.map(item => item.size.charAt(0)).join(', ')
+                                                    ) : (
+                                                        0
+                                                    )}
+                                                </td>
+                                                <td className="border-b border-gray-600 py-2 px-4">
+                                                    &#8377;  {order.cartItems && Array.isArray(order.cartItems) ? (
+                                                        order.cartItems.reduce((total: number, item) => total + (item.pricePerQuantity * item.quantity || 0), 0)
+                                                    ) : (
+                                                        0
+                                                    )}
+                                                </td>
+                                            </tr>
+                                        </React.Fragment>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={5} className="text-center py-4 text-yellow-500">
+                                            No orders available
+                                        </td>
+                                    </tr>
+                                )}
                             </tbody>
                         </table>
                     </div>
+
                 </div>
+
             </div>
         </div>
-
     )
 }
 

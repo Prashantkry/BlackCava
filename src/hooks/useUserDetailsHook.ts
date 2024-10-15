@@ -2,34 +2,27 @@
 import { useForm } from 'react-hook-form';
 
 interface userInputs {
-  firstName: string;
-  middleName: string|null;
-  lastName: string;
+  name: string;
   email: string;
   phoneNumber: string;
-  gender: string;
   addressLine1: string;
-  addressLine2: string|null;
   city: string;
   state: string;
   pinCode: string;
-  profile: string; // URL or base64 string
+  profilePic: string; 
 }
 
 const useUserDetailsHook = () => {
   return useForm<userInputs>({
     defaultValues: {
-      firstName: '',
-      middleName: '',
-      lastName: '',
+      name: '',
       email: '',
       phoneNumber: '',
-      gender: 'Male', // Default gender
       addressLine1: '',
-      addressLine2: '',
       city: '',
       state: '',
       pinCode: '',
+      profilePic: '',
     },
     mode: 'onBlur',
     reValidateMode: 'onChange',

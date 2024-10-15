@@ -1,5 +1,5 @@
 "use client";
-
+import withAuth from '@/utils/withAuth';
 import React, { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Label } from "../ui/label";
@@ -121,4 +121,4 @@ const LabelInputContainer = ({
     );
 };
 
-export default Page;
+export default withAuth(Page);

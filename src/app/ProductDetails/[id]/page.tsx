@@ -29,6 +29,7 @@ const ProductDetailsPage: React.FC = () => {
   const [quantity, setQuantity] = useState<number>(1);
   const [showQuantityInput, setShowQuantityInput] = useState(false);
   const isInWishlist = wishlist.some((item) => item === coffee?.productId);
+  const userId=localStorage.getItem("customerId")!;
   // const cartItem = cart.find((item) => item.productId === coffee?.id && item.size === selectedSize);
   useEffect(() => {
     const fetchProducts = async () => {
@@ -79,6 +80,7 @@ const ProductDetailsPage: React.FC = () => {
         productId: coffee!.productId,
         size: selectedSize,
         quantity: 0,
+        userId:userId,
       })
     );
     if (quantity === 0) {
@@ -92,6 +94,7 @@ const ProductDetailsPage: React.FC = () => {
           productId: coffee!.productId,
           size: selectedSize,
           quantity: quantity,
+          userId: userId,
         })
       );
       toast.success(

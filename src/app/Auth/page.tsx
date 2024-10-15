@@ -22,11 +22,15 @@ const AuthPage = () => {
             });
 
             const result = await response.json();
+            console.log("res data => ", result)
             if (result.status === 200) {
                 toast.success('Success! You have successfully logged in.', {
                     position: "top-right",
                     autoClose: 5000,
                 });
+                const customerId = await result.customerId;
+                console.log("customer id in signIn => ", customerId)
+                localStorage.setItem('customerId', customerId);
                 navigate.push("/")
             }
             else if (result.status === 201) {

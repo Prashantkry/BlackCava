@@ -18,18 +18,6 @@ export interface cartCoffeeItem{
   pricePerQuantity:number;
 }
 
-export interface Transaction {
-  transactionId: string;
-  orderId: number;
-  userId:string;
-  username: string;
-  items: cartCoffeeItem[];
-  totalAmount: number;
-  date: string;
-  orderDelivered:boolean;
-  isFavorite:boolean;
-}
-
 export interface Testimonial {
   testimonialId: string;
   username: string;
@@ -48,14 +36,10 @@ export interface FAQItem {
 
 export interface user{
   id: string;
-  firstName: string;
-  middleName: string|null;
-  lastName: string;
+  name: string;
   email: string;
   phoneNumber: string;
-  gender: string;
   addressLine1: string;
-  addressLine2: string|null;
   city: string;
   state: string;
   pinCode: string;

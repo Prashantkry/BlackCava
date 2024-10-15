@@ -1,4 +1,5 @@
 'use client'
+import withAuth from '@/utils/withAuth';
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaStar } from 'react-icons/fa';
@@ -128,7 +129,7 @@ const page = () => {
   );
 }
 
-export default page;
+export default withAuth(page);
 
 
 // admin page

@@ -1,6 +1,6 @@
 "use client";
-import { useState } from 'react';
-import { usePathname } from 'next/navigation'; // Correct hook for Next.js
+import { useState, useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation'; // Correct hook for Next.js
 import { coffee0 } from '@/assets/Media';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -13,12 +13,42 @@ const CustomNavbar = () => {
     const cart = useSelector((state: RootState) => state.cart.cart);
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
+    const router = useRouter();
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    // useEffect(() => {
+    //     const token = localStorage.getItem('customerId');
+    //     token ? setIsAuthenticated(true) : setIsAuthenticated(false);
+    // }, []);
+    useEffect(() => {
+        const handleStorageChange = () => {
+          const token = localStorage.getItem('customerId');
+          token ? setIsAuthenticated(true) : setIsAuthenticated(false);
+        };
+        handleStorageChange(); 
+        window.addEventListener('storage', handleStorageChange);
+        return () => {
+          window.removeEventListener('storage', handleStorageChange);
+        };
+      }, []);
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
     };
 
     const isActive = (path: string) => pathname === path;
+    const handleNavigation = (path: string) => {
+        if (isAuthenticated) {
+            router.push(path);
+        } else {
+            router.push('/Auth'); 
+        }
+    };
+
+    const handleLogout = () => {
+        localStorage.removeItem('customerId');
+        setIsAuthenticated(false);
+        router.push('/');
+    };
 
     return (
         <nav className="bg-black text-gray-200 shadow-lg font-bold">
@@ -39,22 +69,23 @@ const CustomNavbar = () => {
                             Products
                             {isActive('/ProductsPage') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
                         </Link>
-                        <Link href="/Profile" className={`relative transition duration-300 ${isActive('/Profile') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}>
+                        <span onClick={() => handleNavigation('/Profile')} className={`relative transition duration-300 ${isActive('/Profile') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}>
                             Profile
                             {isActive('/Profile') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
-                        </Link>
-                        <Link href="/ServicePage" className={`relative transition duration-300 ${isActive('/ServicePage') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}>
-                            Services
-                            {isActive('/ServicePage') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
-                        </Link>
+                        </span>
                         <Link href="/AboutPage" className={`relative transition duration-300 ${isActive('/AboutPage') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}>
                             About
                             {isActive('/AboutPage') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
                         </Link>
-                        <Link href="/Auth" className={`relative transition duration-300 ${isActive('/Auth') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}>
+                        {isAuthenticated && (<span className={`relative transition duration-300 ${isActive('/Auth') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}onClick={handleLogout} >
+                            Logout
+                            {isActive('/Auth') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
+                        </span>)}
+                        {!isAuthenticated && (<Link href="/Auth" className={`relative transition duration-300 ${isActive('/Auth') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}>
                             SignIn
                             {isActive('/Auth') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
-                        </Link>
+                        </Link>)}
+
                         <Link href="/ContactPage" className={`relative transition duration-300 ${isActive('/ContactPage') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}>
                             Contact
                             {isActive('/ContactPage') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
@@ -63,7 +94,7 @@ const CustomNavbar = () => {
 
                     {/* Cart and Favorite Icons */}
                     <div className="hidden md:flex items-center space-x-6">
-                        <Link href="/CartPage" className="relative hover:text-indigo-400 transition duration-300 group">
+                        <Link href="/CartPage" onClick={() => handleNavigation('/CartPage')} className="relative hover:text-indigo-400 transition duration-300 group">
                             <FaShoppingCart size={24} />
                             {cart.length > 0 && (
                                 <span className="absolute top-[-8px] right-[-16px] bg-red-600 text-white text-xs rounded-full px-2 py-0">
@@ -98,18 +129,18 @@ const CustomNavbar = () => {
                         <Link href="/" className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 hover:text-white ${isActive('/') ? 'bg-gray-800 text-white' : ''}`}>
                             Home
                         </Link>
-                        <Link href="/ProductsPage" className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 hover:text-white ${isActive('/ProductsPage') ? 'bg-gray-800 text-white' : ''}`}>
+                        <Link href="/ProductsPage" onClick={() => handleNavigation('/ProductsPage')} className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 hover:text-white ${isActive('/ProductsPage') ? 'bg-gray-800 text-white' : ''}`}>
                             Products
                         </Link>
                         <Link href="/Profile" className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 hover:text-white ${isActive('/Profile') ? 'bg-gray-800 text-white' : ''}`}>
                             Profile
                         </Link>
-                        <Link href="/ServicePage" className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 hover:text-white ${isActive('/ServicePage') ? 'bg-gray-800 text-white' : ''}`}>
-                            Services
-                        </Link>
                         <Link href="/AboutPage" className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 hover:text-white ${isActive('/AboutPage') ? 'bg-gray-800 text-white' : ''}`}>
                             About
                         </Link>
+                        {!isAuthenticated && <Link href="/Auth" className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 hover:text-white ${isActive('/Auth') ? 'bg-gray-800 text-white' : ''}`}>
+                            SignIn
+                        </Link>}
                         <Link href="/ContactPage" className={`block px-3 py-2 rounded-md text-base font-medium hover:bg-gray-700 hover:text-white ${isActive('/ContactPage') ? 'bg-gray-800 text-white' : ''}`}>
                             Contact
                         </Link>

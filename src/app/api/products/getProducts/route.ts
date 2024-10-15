@@ -4,7 +4,7 @@ import connection from '@/utils/db';
 // ! Get all products
 export async function GET(req: NextRequest) {
     try {
-      const [rows] = await connection.query('SELECT * FROM allProducts');
+      const [rows] = await connection.query('SELECT * FROM allProducts where isDeleted = FALSE');
       return NextResponse.json({ success: true, data: rows });
     } catch (error) {
       console.error(error);
