@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FaStar } from 'react-icons/fa';
 import { toast } from "react-toastify";
-const page = () => {
+const Page = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const search = searchParams.get('review');
@@ -129,7 +129,7 @@ const page = () => {
   );
 }
 
-export default withAuth(page);
+export default withAuth(Page);
 
 
 // admin page
