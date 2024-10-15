@@ -130,8 +130,9 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
         <Image
           src={coffee.image || coffeeDummyImage}
           alt={coffee.name}
-          className="h-full object-center"
-          layout="responsive"
+          className="h-full object-center rounded"
+          width={250}
+          height={200}
         />
       </div>
       <div className="flex flex-col justify-between w-full sm:w-2/3 p-4 h-[30vh]">
