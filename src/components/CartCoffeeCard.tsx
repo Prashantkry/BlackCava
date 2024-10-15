@@ -15,10 +15,7 @@ interface CartCoffeeCardProps {
   item: cartCoffeeItem;
 }
 
-const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
-  console.log("CartCoffeeCard -> item", item);
-  console.log("coffee => ", coffee);
-  
+const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {  
   const dispatch = useDispatch();
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<string>("small");
@@ -29,7 +26,7 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const cartItem = item;
-
+  const userId=localStorage.getItem("customerId")!;
   useEffect(() => {
     if (cartItem) {
       setQuantity(cartItem.quantity);
@@ -77,6 +74,7 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
         productId: coffee.productId,
         size: selectedSize,
         quantity: 0,
+        userId: userId,
       })
     );
     if (quantity === 0) {
@@ -90,6 +88,7 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
           productId: coffee.productId,
           size: selectedSize,
           quantity: quantity,
+          userId: userId,
         })
       );
       toast.success(
@@ -105,6 +104,7 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
         productId: coffee.productId,
         size: selectedSize,
         quantity: 0,
+        userId: userId,
       })
     );
     toast.success(
@@ -131,7 +131,7 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
           src={coffee.image || coffeeDummyImage}
           alt={coffee.name}
           className="h-full object-center"
-          layout="fill"
+          layout="responsive"
         />
       </div>
       <div className="flex flex-col justify-between w-full sm:w-2/3 p-4 h-[30vh]">

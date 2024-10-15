@@ -1,4 +1,5 @@
 "use client";
+import withAuth from '@/utils/withAuth';
 import { useSelector } from "react-redux";
 import Link from "next/link";
 import FavoriteCoffeeCard from "../../components/FavouriteCoffeeCard";
@@ -71,4 +72,4 @@ const Page = () => {
   );
 };
 
-export default Page;
+export default withAuth(Page);

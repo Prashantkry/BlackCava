@@ -28,7 +28,7 @@ const ProductsPage = () => {
                     },
                 });
                 const data = await response.json();
-                console.log('Raw response data:', data);
+                // console.log('Raw response data:', data);
 
                 if (data.success = true) {
                     setProducts(data.data);

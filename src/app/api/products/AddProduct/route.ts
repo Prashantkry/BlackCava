@@ -26,7 +26,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 small DECIMAL(10, 2),
                 medium DECIMAL(10, 2),
                 large DECIMAL(10, 2),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                isDeleted BOOLEAN DEFAULT FALSE
             );
         `);
 
