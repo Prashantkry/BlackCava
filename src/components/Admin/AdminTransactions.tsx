@@ -18,7 +18,6 @@ const transactions: Transaction[] = [
     orderDelivered: true,
     isFavorite:false,
   },
-  // Add more dummy transactions...
 ];
 
 const Transactions = () => {

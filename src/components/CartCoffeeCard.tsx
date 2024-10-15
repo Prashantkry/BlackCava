@@ -1,5 +1,5 @@
 import Image from "next/image";
-import coffeeDummyImage from "../assets/coffeeDummyImage.webp";
+// import coffeeDummyImage from "../assets/coffeeDummyImage.webp";
 import { useRouter } from "next/navigation";
 import { FaEllipsisH } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
@@ -128,7 +128,7 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
     >
       <div className="relative w-full sm:w-1/3 h-[30vh]">
         <Image
-          src={coffee.image || coffeeDummyImage}
+          src={coffee.image}
           alt={coffee.name}
           className="h-full object-center rounded"
           width={250}

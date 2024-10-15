@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toggleWishlist } from '../app/Redux/wishlistSlice';
 import { addToCart, removeFromCart } from '../app/Redux/cartSlice';
 import { FaHeart, FaShoppingCart } from 'react-icons/fa';
-import coffeeDummyImage from "../assets/coffeeDummyImage.webp";
+// import coffeeDummyImage from "../assets/coffeeDummyImage.webp";
 import { motion } from 'framer-motion';
 import { Coffee } from "../app/Modals/modal";
 import Image from 'next/image';
@@ -119,7 +119,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
       className="bg-gray-800 rounded-2xl overflow-hidden shadow-xl p-4 flex flex-col items-center"
     >
       <div className="relative w-full h-48 md:h-56 mb-4">
-        <Image src={product.image || coffeeDummyImage} alt={product.name} className='rounded' fill style={{ objectFit: 'cover' }} />
+        <Image src={product.image} alt={product.name} className='rounded' fill style={{ objectFit: 'cover' }} />
       </div>
       <Link href={`/ProductDetails/${product.productId}`}>
         <h2 className="text-lg md:text-xl font-semibold mb-2 text-yellow-500">{product.name}</h2>

@@ -4,10 +4,10 @@ import { FaHeart } from 'react-icons/fa';
 import { useDispatch } from 'react-redux';
 import React, { useState, useEffect } from 'react';
 import useUserDetailsHook from '@/hooks/useUserDetailsHook';
-import { transactionsData, coffeeData } from '@/assets/dummyData';
-import { userData } from '@/assets/dummyData';
+// import { transactionsData, coffeeData } from '@/assets/dummyData';
+// import { userData } from '@/assets/dummyData';
 import { SubmitHandler } from 'react-hook-form';
-import userDummyImage from "@/assets/userDummyImage.webp";
+// import userDummyImage from "@/assets/userDummyImage.webp";
 import usePasswordHook from '@/hooks/usePasswordHook';
 import { Coffee, cartCoffeeItem } from '../Modals/modal';
 import { addToCart, CartItem, clearCart } from '../Redux/cartSlice';
@@ -63,7 +63,7 @@ const Profile = () => {
                 setValue('email', data.data.email);
                 setValue('pinCode', data.data.pinCode);
                 setValue('phoneNumber', data.data.phoneNumber);
-                setPhoto(data.data.profilePic || userDummyImage);
+                setPhoto(data.data.profilePic);
             }
             setLoading(false)
         };
@@ -205,7 +205,7 @@ const Profile = () => {
                             loading ? (
                                 <Skeleton circle={true} height={128} width={128} />
                             ) : (
-                                <Image src={photo || userDummyImage} alt="User Photo" width={128} height={128} className="rounded-full" />
+                                <Image src={photo || ''} alt="User Photo" width={128} height={128} className="rounded-full" />
                             )
                         }
                         <input type="file" onChange={handlePhotoChange} className="hidden" id="photoInput" />

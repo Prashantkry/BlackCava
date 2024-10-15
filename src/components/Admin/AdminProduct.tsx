@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ConfirmationModal from '../ConfirmationModal';
 import { Coffee } from '@/app/Modals/modal';
-import { coffeeData } from '@/assets/dummyData';
 const API_URL = "http://localhost:3000/api/products/getProducts";
 
 const AdminProductTable = () => {

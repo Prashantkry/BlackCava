@@ -2,7 +2,7 @@
 "use client";
 import Image from 'next/image';
 import { user } from '@/app/Modals/modal'; // Ensure this has the correct type definition for a user
-import userDummyImage from '@/assets/userDummyImage.webp';
+// import userDummyImage from '@/assets/userDummyImage.webp';
 import React, { useState, useEffect } from 'react';
 
 const Users = () => {
@@ -50,7 +50,7 @@ const Users = () => {
                   <td className="border p-2 text-center">{index + 1}</td>
                   <td className="border p-2 text-center">
                     <Image
-                      src={user.profile || userDummyImage}
+                      src={user.profile || ''}
                       alt="Profile"
                       className="h-10 w-10 rounded-full mx-auto"
                     />

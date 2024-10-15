@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { FaStar } from 'react-icons/fa';
 import { useState } from 'react';
 import { Testimonial } from '@/app/Modals/modal';
-import userDummyImage from '@/assets/userDummyImage.webp'
+// import userDummyImage from '@/assets/userDummyImage.webp'
 
 
 interface TestimonialCarouselProps {
@@ -39,7 +39,7 @@ const TestimonialCarousel: React.FC<TestimonialCarouselProps> = ({ testimonials 
           </div>
           <p className='text-xl text-center'>{testimonials[currentIndex].review}</p>
           <div className="flex gap-4 items-center justify-center">
-            <Image src={userDummyImage} alt={testimonials[currentIndex].username} className='rounded-full w-[10%]'/>
+            <Image src="" alt={testimonials[currentIndex].username} className='rounded-full w-[10%]'/>
             <p className="font-bold">{testimonials[currentIndex].username}</p>
           </div>
         </div>

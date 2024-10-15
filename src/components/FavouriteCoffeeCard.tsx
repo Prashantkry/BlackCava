@@ -1,5 +1,5 @@
 import Image from "next/image";
-import coffeeDummyImage from "../assets/coffeeDummyImage.webp";
+// import coffeeDummyImage from "../assets/coffeeDummyImage.webp";
 import { FaShoppingCart, FaEllipsisH } from "react-icons/fa";
 import { toggleWishlist } from "../app/Redux/wishlistSlice";
 import { Coffee } from "../app/Modals/modal";
@@ -26,6 +26,8 @@ const FavoriteCoffeeCard: React.FC<FavoriteCoffeeCardProps> = ({ coffee }) => {
   const cartItem = cart.find(
     (item) => item.productId === coffee.productId && item.size === selectedSize
   );
+
+  const userId = localStorage.getItem("customerId")!;
 
   useEffect(() => {
     if (cartItem) {
@@ -71,31 +73,49 @@ const FavoriteCoffeeCard: React.FC<FavoriteCoffeeCardProps> = ({ coffee }) => {
     toast.success(`${coffee.name} removed from wishlist`, { autoClose: 1500 });
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (quantity === 0) {
-      dispatch(
-        removeFromCart({
-          productId: coffee.productId,
-          size: selectedSize,
-          quantity: 0,
-        })
-      );
-      toast.success(
-        `${coffee.name} with size ${selectedSize} removed from cart`,
-        { autoClose: 1500 }
-      );
+      const removeResponse = await fetch('http://localhost:3000/api/products/cartItem/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, productId: coffee.productId, size: selectedSize }),
+      });
+
+      if (removeResponse.ok) {
+        dispatch(removeFromCart({ userId, productId: coffee.productId, size: selectedSize, quantity: 0 }));
+        toast.success(`${coffee.name} with size ${selectedSize} removed from cart`, { autoClose: 1500 });
+      }
     } else {
-      dispatch(
-        addToCart({
-          productId: coffee.productId,
-          size: selectedSize,
-          quantity: quantity,
-        })
-      );
-      toast.success(
-        `${coffee.name} added to cart with size ${selectedSize} and quantity ${quantity}`,
-        { autoClose: 1500 }
-      );
+      const index = cart.findIndex(item => item.productId == coffee.productId && item.size == selectedSize);
+      if (index != -1) {
+        console.log("frontend update api call");
+        const updateResponse = await fetch('http://localhost:3000/api/products/cartItem', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId, productId: coffee.productId, size: selectedSize, quantity }),
+        });
+
+        if (updateResponse.ok) {
+          toast.success(`${coffee.name} updated in the cart with size ${selectedSize} and quantity ${quantity}`, { autoClose: 1500 });
+        }
+      }
+      else {
+        const addC = await fetch('http://localhost:3000/api/products/cartItem', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ userId: userId, productId: coffee.productId, size: selectedSize, quantity: quantity }),
+        });
+        const data = await addC.json();
+        // console.log("data => ", data);
+      }
+      dispatch(addToCart({ userId: userId, productId: coffee.productId, size: selectedSize, quantity: quantity }));
+      toast.success(`${coffee.name} added to cart with size ${selectedSize} and quantity ${quantity}`, { autoClose: 1500 });
     }
   };
 
