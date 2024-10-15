@@ -3,8 +3,8 @@ import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaHeart, FaShoppingCart } from "react-icons/fa";
-import coffeeDummyImage from "@/assets/coffeeDummyImage.webp";
-import { testimonialData, faqData } from "../../../assets/dummyData";
+// import coffeeDummyImage from "@/assets/coffeeDummyImage.webp";
+// import { testimonialData, faqData } from "../../../assets/dummyData";
 import { Coffee, FAQItem, Testimonial } from "../../Modals/modal";
 import { removeFromCart, addToCart } from "@/app/Redux/cartSlice";
 import { toggleWishlist } from "@/app/Redux/wishlistSlice";
@@ -14,7 +14,9 @@ import { RootState } from "@/app/Redux/store";
 import TestimonialCarousel from "@/components/TestimonialCarousel";
 import FAQ from "@/components/FAQ";
 import { toast } from "react-toastify";
+
 const API_URL = "http://localhost:3000/api/products/getProducts";
+
 const ProductDetailsPage: React.FC = () => {
   const { id } = useParams();
   const router = useRouter();
@@ -29,9 +31,10 @@ const ProductDetailsPage: React.FC = () => {
   const [quantity, setQuantity] = useState<number>(1);
   const [showQuantityInput, setShowQuantityInput] = useState(false);
   const isInWishlist = wishlist.some((item) => item === coffee?.productId);
-  const userId=localStorage.getItem("customerId")!;
+  const userId = localStorage.getItem("customerId")!;
   // const cartItem = cart.find((item) => item.productId === coffee?.id && item.size === selectedSize);
-  useEffect(() => {
+
+  const waitFn = async () => {
     const fetchProducts = async () => {
       try {
         const response = await fetch(API_URL, {
@@ -52,7 +55,8 @@ const ProductDetailsPage: React.FC = () => {
         console.error("Error fetching products:", error);
       }
     };
-    fetchProducts();
+
+    await fetchProducts();
     if (id) {
       const foundCoffee = products.find(
         (coffee) => coffee.productId === String(id)
@@ -60,18 +64,22 @@ const ProductDetailsPage: React.FC = () => {
       if (foundCoffee) {
         setCoffee(foundCoffee);
         setSelectedSize("medium");
-        const faqItems = faqData.filter(
-          (item) => item.coffeeName == foundCoffee.name
-        );
-        setFaqs(faqItems);
-        const testimonialItems = testimonialData.filter(
-          (item) => item.coffeeName == foundCoffee.name
-        );
-        setTestimonials(testimonialItems);
+        // const faqItems = faqData.filter(
+        //   (item) => item.coffeeName == foundCoffee.name
+        // );
+        // setFaqs(faqItems);
+        // const testimonialItems = testimonialData.filter(
+        //   (item) => item.coffeeName == foundCoffee.name
+        // );
+        // setTestimonials(testimonialItems);
       } else {
         //navigate user to some other page
       }
     }
+  }
+
+  useEffect(() => {
+    waitFn();
   }, [id]);
 
   const handleAddToCart = () => {
@@ -80,7 +88,7 @@ const ProductDetailsPage: React.FC = () => {
         productId: coffee!.productId,
         size: selectedSize,
         quantity: 0,
-        userId:userId,
+        userId: userId,
       })
     );
     if (quantity === 0) {
@@ -98,8 +106,7 @@ const ProductDetailsPage: React.FC = () => {
         })
       );
       toast.success(
-        `${
-          coffee!.name
+        `${coffee!.name
         } added to cart with size ${selectedSize} and quantity ${quantity}`,
         { autoClose: 1500 }
       );
@@ -123,7 +130,7 @@ const ProductDetailsPage: React.FC = () => {
             <div className="flex flex-col h-[60vh] sm:gap-4 md:flex-row gap-8">
               <div className="w-full md:w-1/2">
                 <Image
-                  src={coffeeDummyImage}
+                  src=""
                   className="rounded-2xl h-full"
                   alt={coffee.name}
                   objectFit="cover"
@@ -141,31 +148,28 @@ const ProductDetailsPage: React.FC = () => {
                   <h3 className="text-lg font-bold">Available Sizes:</h3>
                   <div className="flex gap-2 mt-2">
                     <button
-                      className={`px-4 py-2 rounded-md ${
-                        selectedSize === "small"
-                          ? "bg-yellow-500"
-                          : "bg-gray-600"
-                      }`}
+                      className={`px-4 py-2 rounded-md ${selectedSize === "small"
+                        ? "bg-yellow-500"
+                        : "bg-gray-600"
+                        }`}
                       onClick={() => setSelectedSize("small")}
                     >
                       Small - ${coffee.small}
                     </button>
                     <button
-                      className={`px-4 py-2 rounded-md ${
-                        selectedSize === "medium"
-                          ? "bg-yellow-500"
-                          : "bg-gray-600"
-                      }`}
+                      className={`px-4 py-2 rounded-md ${selectedSize === "medium"
+                        ? "bg-yellow-500"
+                        : "bg-gray-600"
+                        }`}
                       onClick={() => setSelectedSize("medium")}
                     >
                       Medium - ${coffee.medium}
                     </button>
                     <button
-                      className={`px-4 py-2 rounded-md ${
-                        selectedSize === "large"
-                          ? "bg-yellow-500"
-                          : "bg-gray-600"
-                      }`}
+                      className={`px-4 py-2 rounded-md ${selectedSize === "large"
+                        ? "bg-yellow-500"
+                        : "bg-gray-600"
+                        }`}
                       onClick={() => setSelectedSize("large")}
                     >
                       Large - ${coffee.large}
@@ -222,15 +226,15 @@ const ProductDetailsPage: React.FC = () => {
             </div>
 
             {/* Testimonial Section */}
-            <div className="flex flex-col gap-4">
+            {/* <div className="flex flex-col gap-4">
               <h2 className="text-3xl w-full font-bold text-yellow-500 text-center">
                 Customer Testimonials
               </h2>
               <TestimonialCarousel testimonials={testimonials} />
-            </div>
+            </div> */}
 
             {/* FAQ Section */}
-            <div className="flex flex-col gap-4">
+            {/* <div className="flex flex-col gap-4">
               <div className="rounded-xl text-center">
                 <h2 className="text-3xl w-full font-bold text-yellow-500 mb-2">
                   Frequently Asked Questions
@@ -241,7 +245,7 @@ const ProductDetailsPage: React.FC = () => {
                 </p>
               </div>
               <FAQ faqs={faqs} />
-            </div>
+            </div> */}
           </>
         ) : (
           <div>Product not found</div>

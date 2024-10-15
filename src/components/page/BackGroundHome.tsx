@@ -14,9 +14,7 @@ export function BackGroundHome() {
                 objectFit="cover"
                 className="absolute inset-0 z-0"
             />
-            {/* Gradient Overlay */}
             <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black z-10"></div>
-            {/* Content */}
             <div className="relative z-20 text-center mt-[40vh] sm:mt-10 px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 lg:py-24 flex flex-col items-center">
                 <p className="text-3xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl text-teal-300 font-semibold mb-4 sm:mb-6 md:mb-8 lg:mb-10 leading-tight animate-fadeInUp satisfy-regular">
                     Crafting the Perfect Cup, One Bean at a Time.
