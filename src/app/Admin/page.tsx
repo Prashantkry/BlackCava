@@ -8,7 +8,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Dashboard from '@/components/Admin/AdminDashboard';
 import AddNewProduct from '@/components/Admin/AddNewProduct';
 
-const AdminPage:React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const AdminPage:React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const section = searchParams.get('section');
