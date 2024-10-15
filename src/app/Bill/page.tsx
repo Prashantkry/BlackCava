@@ -2,7 +2,7 @@
 import { Transaction } from '../Modals/modal';
 import { generateBill } from '@/lib/generateBill';
 import { useEffect, useState } from 'react';
-import { transactionsData } from '@/assets/dummyData';
+import { transactionsData } from '../../assets/dummyData';
 
 const Bill = () => {
     const [order, setOrder] = useState<Transaction | null>(null);

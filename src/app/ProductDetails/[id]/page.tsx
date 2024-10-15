@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaHeart, FaShoppingCart } from "react-icons/fa";
 import coffeeDummyImage from "@/assets/coffeeDummyImage.webp";
-import { testimonialData, faqData } from "@/assets/dummyData";
+import { testimonialData, faqData } from "../../../assets/dummyData";
 import { Coffee, FAQItem, Testimonial } from "../../Modals/modal";
 import { removeFromCart, addToCart } from "@/app/Redux/cartSlice";
 import { toggleWishlist } from "@/app/Redux/wishlistSlice";
