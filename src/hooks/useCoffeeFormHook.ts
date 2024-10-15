@@ -16,9 +16,9 @@ export const useCoffeeForm = (defaultValues?: Coffee) => {
       description: '',
       category: '',
       flavour: '',
-      small: '',
-      medium: '',
-      large: '',
+      small: 0,
+      medium: 0,
+      large: 0,
     },
   });
 
