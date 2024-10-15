@@ -21,9 +21,6 @@ const Page = () => {
   const [isProccedToBuy, setProccedToBuy] = useState<boolean>(false);
   const [cartItems, setCartItems] = useState<cartCoffeeItem[]>([]);
   const [totalAmount, setTotalAmount] = useState(0);
-  const upiId = process.env.NEXT_PUBLIC_UPI_ID;
-  const payeeName = process.env.NEXT_PUBLIC_PAYEE_NAME;
-  const [qrCodeUrl, setQrCodeUrl] = useState("");
 
   useEffect(() => {
     const fetchAndProcessData = async () => {
@@ -39,7 +36,6 @@ const Page = () => {
           // console.log('Raw response data:', data);
 
           if (data.success = true) {
-            setProducts(data.data);
             return data.data;
           } else {
             console.error('Failed to fetch products:', data.message);
@@ -63,7 +59,6 @@ const Page = () => {
           if (data.status === 200) {
             // console.log("data success => ", data.status)
             // console.log("cartItems => ", data.cartItems)
-            setCartProducts(data.cartItems);
             return data.cartItems;
           } else {
             // console.error("Failed to fetch products:", data.message);
@@ -76,7 +71,9 @@ const Page = () => {
       };
 
       const productData = await fetchProducts();
+      setProducts(productData);
       const cartData = await fetchCart();
+      setCartProducts(cartData);
       // console.log("productData => ", productData, "cartData => ", cartData)
 
       const coffeesInCart: Coffee[] = [];
@@ -115,7 +112,7 @@ const Page = () => {
       setTotalAmount(total);
     };
     fetchAndProcessData();
-  }, [cart]);
+  }, []);
 
   const publicKey =
     "pk_test_51OUipuSD6rEtgA3HR4Yb5I0b10ADtBgl6owKQJmZLFxQiBkdVKPUvGQiJcizlvyXgU3QnsThHOpYDSaEDzWKOsfE00YXM24aQr";

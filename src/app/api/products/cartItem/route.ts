@@ -65,13 +65,13 @@ export async function PUT(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
     console.log("Delete all wishlists items API triggered");
     try {
-        const { userId } = await req.json(); // Expect userId in the request body
+        const { userId, productId, size } = await req.json(); 
 
         if (!userId) {
             return NextResponse.json({ message: 'User ID is required' }, { status: 400 });
         }
 
-        await connection.query('DELETE FROM wishlists WHERE userId = ?', [userId]);
+        await connection.query('DELETE FROM cartItems WHERE userId = ? AND productId = ? AND size = ?', [userId, productId, size]);
         return NextResponse.json({ message: 'All wishlists items deleted successfully' }, { status: 200 });
 
     } catch (error: any) {

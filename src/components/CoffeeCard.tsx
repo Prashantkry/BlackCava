@@ -47,6 +47,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [cartItem]);
+  
   const handleSizeChange = (size: 'small' | 'medium' | 'large') => {
     setSelectedSize(size);
     const newCartItem = cart.find((item) => item.productId === product.productId && item.size === size);
@@ -68,7 +69,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
 
   const handleAddToCart = async () => {
     if (quantity === 0) {
-      const removeResponse = await fetch('http://localhost:3000/api/products/cartItem/delete', {
+      const removeResponse = await fetch('http://localhost:3000/api/products/cartItem', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -81,6 +82,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
         toast.success(`${product.name} with size ${selectedSize} removed from cart`, { autoClose: 1500 });
       }
     } else {
+      console.log("Product => ",product,"selectedSize => ",selectedSize)
       const index = cart.findIndex(item => item.productId == product.productId && item.size == selectedSize);
       if (index != -1) {
         console.log("frontend update api call");

@@ -18,7 +18,7 @@ interface CartCoffeeCardProps {
 const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {  
   const dispatch = useDispatch();
   const router = useRouter();
-  const [selectedSize, setSelectedSize] = useState<string>("small");
+  const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large'>("small");
   const [quantity, setQuantity] = useState<number>(1);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const cart = useSelector((state: RootState) => state.cart.cart);
@@ -30,7 +30,7 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
   useEffect(() => {
     if (cartItem) {
       setQuantity(cartItem.quantity);
-      setSelectedSize(cartItem.size);
+      setSelectedSize(cartItem.size as 'small' | 'medium' | 'large');
     }
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -53,9 +53,9 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [cartItem]);
+  }, []);
 
-  const handleSizeChange = (size: string) => {
+  const handleSizeChange = (size: 'small' | 'medium' | 'large') => {
     setSelectedSize(size);
     const newCartItem = cart.find(
       (item) => item.productId === coffee.productId && item.size === size
@@ -67,46 +67,49 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
     }
   };
 
-  const handleSaveChanges = () => {
+  const handleSaveChanges = async () => {
+    console.log("delete F trig")
     setIsEditing(false);
-    dispatch(
-      removeFromCart({
-        productId: coffee.productId,
-        size: selectedSize,
-        quantity: 0,
-        userId: userId,
-      })
-    );
+    await fetch('http://localhost:3000/api/products/cartItem', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId, productId: coffee.productId, size: selectedSize }),
+    });
     if (quantity === 0) {
+      dispatch(removeFromCart({ userId, productId: coffee.productId, size: selectedSize, quantity: 0 }));
       toast.success(
         `${coffee.name} with size ${selectedSize} removed from cart`,
         { autoClose: 1500 }
       );
     } else {
-      dispatch(
-        addToCart({
-          productId: coffee.productId,
-          size: selectedSize,
-          quantity: quantity,
-          userId: userId,
-        })
-      );
-      toast.success(
-        `${coffee.name} added to cart with size ${selectedSize} and quantity ${quantity}`,
-        { autoClose: 1500 }
-      );
+      const addC = await fetch('http://localhost:3000/api/products/cartItem', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: userId, productId: coffee.productId, size: selectedSize, quantity: quantity }),
+      });
+      if(addC.ok){
+        dispatch(addToCart({productId: coffee.productId,size: selectedSize,quantity: quantity,userId: userId,}));
+        toast.success(
+          `${coffee.name} added to cart with size ${selectedSize} and quantity ${quantity}`,
+          { autoClose: 1500 }
+        );
+      }
     }
   };
 
-  const handleRemoveFromCart = () => {
-    dispatch(
-      removeFromCart({
-        productId: coffee.productId,
-        size: selectedSize,
-        quantity: 0,
-        userId: userId,
-      })
-    );
+  const handleRemoveFromCart =async () => {
+    await fetch('http://localhost:3000/api/products/cartItem', {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId, productId: coffee.productId, size: selectedSize }),
+    });
+    dispatch(removeFromCart({ userId, productId: coffee.productId, size: selectedSize, quantity: 0 }));
     toast.success(
       `${coffee.name} with size ${selectedSize} removed from cart`,
       { autoClose: 1500 }
