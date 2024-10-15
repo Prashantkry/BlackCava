@@ -28,8 +28,8 @@ export default function RootLayout({
           rel="stylesheet"
         />
         {/* Add your metadata here if needed */}
-        <title>{metadata.title}</title>
-        <meta name="description" content={metadata.description} />
+        <title>{String(metadata.title) ?? ''}</title>
+        <meta name="description" content={metadata.description ?? ''} />
       </head>
       <body className={inter.className}>
         <Provider store={store}>
