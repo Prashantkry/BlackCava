@@ -11,7 +11,10 @@ import Skeleton from 'react-loading-skeleton'; // Import Skeleton from the libra
 import 'react-loading-skeleton/dist/skeleton.css';
 
 interface orderCartData {
-
+    name: string;
+    quantity: number;
+    size: string;
+    pricePerQuantity: number;
 }
 
 export interface Transaction {
@@ -387,16 +390,16 @@ const Profile = () => {
                                                 })}
                                             </td>
                                             <td className="border-b border-gray-600 py-2 px-4">
-                                                {order.cartItems?.map(item => item.name).join(', ') || 'N/A'}
+                                                {order.cartItems?.name || 'N/A'}
                                             </td>
                                             <td className="border-b border-gray-600 py-2 px-4">
-                                                {order.cartItems?.map(item => item.quantity).join(', ') || 0}
+                                                {order.cartItems?.quantity || 0}
                                             </td>
                                             <td className="border-b border-gray-600 py-2 px-4">
-                                                {order.cartItems?.map(item => item.size.charAt(0)).join(', ') || 'N/A'}
+                                                {order.cartItems?.size.charAt(0) || 'N/A'}
                                             </td>
                                             <td className="border-b border-gray-600 py-2 px-4">
-                                                &#8377; {order.cartItems?.reduce((total, item) => total + (item.pricePerQuantity * item.quantity || 0), 0) || 0}
+                                                &#8377; {order.cartItems?.pricePerQuantity * order.cartItems?.quantity || 0}
                                             </td>
                                         </tr>
                                     ))
