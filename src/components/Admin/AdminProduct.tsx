@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ConfirmationModal from '../ConfirmationModal';
 import { Coffee } from '@/app/Models/interface';
-const API_URL = "http://localhost:3000/api/products/getProducts";
+// const API_URL = "http://localhost:3000/api/products/getProducts";
+const API_URL = "/api/products/getProducts";
 
 const AdminProductTable = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -49,7 +50,8 @@ const AdminProductTable = () => {
 
     const confirmDelete = async () => {
         console.log('Deleting product with id:', selectedProduct);
-        const deleteProduct = await fetch(`http://localhost:3000/api/products/DeleteProduct?id=${selectedProduct}`, {
+        // const deleteProduct = await fetch(`http://localhost:3000/api/products/DeleteProduct?id=${selectedProduct}`, {
+        const deleteProduct = await fetch(`/api/products/DeleteProduct?id=${selectedProduct}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',

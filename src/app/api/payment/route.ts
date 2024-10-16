@@ -68,8 +68,8 @@ export async function POST(req: NextRequest) {
         //         message: "We'll email you instructions on how to get started.",
         //     },
         // },
-        success_url: "http://localhost:3000/Success",
-        cancel_url: "http://localhost:3000",
+        success_url: "https://black-cava.vercel.app/Success",
+        cancel_url: "https://black-cava.vercel.app",
     });
 
     // * want to save data in database

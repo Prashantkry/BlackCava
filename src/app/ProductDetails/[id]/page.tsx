@@ -15,7 +15,8 @@ import TestimonialCarousel from "@/components/TestimonialCarousel";
 import FAQ from "@/components/FAQ";
 import { toast } from "react-toastify";
 
-const API_URL = "http://localhost:3000/api/products/getProducts";
+// const API_URL = "http://localhost:3000/api/products/getProducts";
+const API_URL = "/api/products/getProducts";
 
 const ProductDetailsPage: React.FC = () => {
   const { id } = useParams();

@@ -19,7 +19,8 @@ const Page = () => {
         setIsSubmitting(true);
 
         try {
-            const response = await fetch(`${backendUrl}/api/contact`, {
+            // const response = await fetch(`${backendUrl}/api/contact`, {
+            const response = await fetch('/api/contact', {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

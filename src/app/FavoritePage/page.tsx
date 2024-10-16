@@ -6,7 +6,8 @@ import FavoriteCoffeeCard from "../../components/FavouriteCoffeeCard";
 import { RootState } from "@/app/Redux/store";
 import { Coffee } from "../Models/interface";
 import { useState, useEffect } from "react";
-const API_URL = "http://localhost:3000/api/products/getProducts";
+// const API_URL = "http://localhost:3000/api/products/getProducts";
+const API_URL = "/api/products/getProducts";
 const Page = () => {
   const wishlist = useSelector((state: RootState) => state.wishlist.wishlist);
   const [favoriteProducts, setFavoriteProducts] = useState<Coffee[]>([]);

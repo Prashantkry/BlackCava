@@ -7,7 +7,8 @@ import CoffeeCard from '@/components/CoffeeCard';
 import Loading from '../loading';
 
 // const API_URL = 'https://api.sampleapis.com/coffee/hot';
-const API_URL = 'http://localhost:3000/api/products/getProducts';
+// const API_URL = 'http://localhost:3000/api/products/getProducts';
+const API_URL = '/api/products/getProducts';
 
 const ProductsPage = () => {
     const [products, setProducts] = useState<Coffee[]>([]);

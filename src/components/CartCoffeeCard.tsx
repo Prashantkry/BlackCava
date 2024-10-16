@@ -79,7 +79,8 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
 
     try {
       if (quantity === 0) {
-        await fetch('http://localhost:3000/api/products/cartItem', {
+        // await fetch('http://localhost:3000/api/products/cartItem', {
+        await fetch('/api/products/cartItem', {
           method: 'DELETE',
           headers: {
             'Content-Type': 'application/json',
@@ -96,7 +97,8 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
           (item) => item.productId === coffee.productId && item.size === selectedSize
         );
         if (updatedCart != -1) {
-          await fetch('http://localhost:3000/api/products/cartItem', {
+          // await fetch('http://localhost:3000/api/products/cartItem', {
+          await fetch('/api/products/cartItem', {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
@@ -105,7 +107,8 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
           });
         }
         else {
-          const addC = await fetch('http://localhost:3000/api/products/cartItem', {
+          // const addC = await fetch('http://localhost:3000/api/products/cartItem', {
+          const addC = await fetch('/api/products/cartItem', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -128,7 +131,7 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
 
 
   const handleRemoveFromCart = async () => {
-    await fetch('http://localhost:3000/api/products/cartItem', {
+    await fetch('/api/products/cartItem', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
