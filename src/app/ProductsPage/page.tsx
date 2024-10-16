@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation'
 import { Coffee } from '../Models/interface';
 import CoffeeCard from '@/components/CoffeeCard';
+import Loading from '../loading';
 
 // const API_URL = 'https://api.sampleapis.com/coffee/hot';
 const API_URL = 'http://localhost:3000/api/products/getProducts';
@@ -74,7 +75,7 @@ const ProductsPage = () => {
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
     return (
-        <Suspense fallback={null}>
+        <Suspense fallback={<Loading/>}>
             <div className="min-h-screen bg-gray-900 text-white py-16 px-4">
                 <div className="container mx-auto">
                     {/* Page Title */}

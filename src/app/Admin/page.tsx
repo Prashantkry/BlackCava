@@ -7,6 +7,7 @@ import Sidebar from '@/components/Admin/Sidebar';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Dashboard from '@/components/Admin/AdminDashboard';
 import AddNewProduct from '@/components/Admin/AddNewProduct';
+import Loading from '../loading';
 
 const AdminPage: React.FC = () => {
   const router = useRouter();
@@ -37,7 +38,7 @@ const AdminPage: React.FC = () => {
   };
 
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<Loading/>}>
       <div className="relative flex h-screen">
         {/* Hamburger Menu for smaller screens */}
         <button
