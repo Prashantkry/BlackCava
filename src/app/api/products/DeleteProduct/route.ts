@@ -1,6 +1,7 @@
+import { MongoClient } from 'mongodb';
 import { NextResponse } from 'next/server';
-import db from '@/utils/db';
-import { ResultSetHeader, RowDataPacket } from 'mysql2';
+
+const mongoUrl = process.env.NEXT_PUBLIC_MongoDB!;
 
 export async function DELETE(request: Request) {
     const { searchParams } = new URL(request.url);
@@ -10,18 +11,16 @@ export async function DELETE(request: Request) {
         return NextResponse.json({ success: false, message: 'Product ID is required' }, { status: 400 });
     }
 
+    let client: MongoClient | null = null;
+
     try {
-        const [rows] = await db.query<RowDataPacket[]>('SELECT id FROM allProducts WHERE productId = ?', [productId]);
+        client = await MongoClient.connect(mongoUrl);
+        const db = client.db("blackCava");
+        const collection = db.collection("allProduct");
 
-        if (rows.length === 0) {
-            return NextResponse.json({ success: false, message: 'Product not found' }, { status: 404 });
-        }
+        const result = await collection.deleteOne({ productId });
 
-        const id = rows[0].id;
-
-        const [result] = await db.query<ResultSetHeader>('update allProducts set isDeleted = true WHERE id = ?', [id]);
-
-        if (result.affectedRows === 0) {
+        if (result.deletedCount === 0) {
             return NextResponse.json({ success: false, message: 'Product not found during deletion' }, { status: 404 });
         }
 
@@ -30,5 +29,9 @@ export async function DELETE(request: Request) {
     } catch (error) {
         console.error('Error deleting product:', error);
         return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+    } finally {
+        if (client) {
+            await client.close();
+        }
     }
 }

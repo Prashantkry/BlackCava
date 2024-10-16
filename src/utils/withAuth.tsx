@@ -1,4 +1,3 @@
-// withAuth.tsx
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
@@ -7,12 +6,12 @@ const withAuth = (WrappedComponent: any) => {
     const router = useRouter();
 
     useEffect(() => {
-      const token = localStorage.getItem('customerId'); // Assume the token is stored in localStorage
+      const token = localStorage.getItem('customerEmail');
       if (!token) {
-        router.push('/Auth'); // Redirect to sign-in page if not authenticated
+        router.push('/Auth');
       }
     }, [router]);
-    return localStorage.getItem('customerId') ? <WrappedComponent {...props} /> : null;
+    return localStorage.getItem('customerEmail') ? <WrappedComponent {...props} /> : null;
   };
 
   return AuthComponent;

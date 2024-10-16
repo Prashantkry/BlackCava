@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Controller } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
 import { useCoffeeForm } from '@/hooks/useCoffeeFormHook'; // Adjust the path
-import { Coffee } from '@/app/Modals/modal'; // Adjust the path
+import { Coffee } from '@/app/Models/interface'; // Adjust the path
 import { toast } from 'react-toastify';
 import Image from 'next/image';
 

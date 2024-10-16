@@ -1,6 +1,6 @@
 // src/components/TransactionTable.tsx
 import React from 'react';
-import { Transaction } from '@/app/Modals/modal';
+import { Transaction } from '@/app/Models/interface';
 
 interface Props {
   transactions: Transaction[];

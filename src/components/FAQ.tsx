@@ -1,4 +1,4 @@
-import { FAQItem } from "@/app/Modals/modal";
+import { FAQItem } from "@/app/Models/interface";
 import { useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 

@@ -1,18 +1,12 @@
 'use client';
 import Image from 'next/image';
-import { FaHeart } from 'react-icons/fa';
-import { useDispatch } from 'react-redux';
 import React, { useState, useEffect } from 'react';
 import useUserDetailsHook from '@/hooks/useUserDetailsHook';
-// import { transactionsData, coffeeData } from '@/assets/dummyData';
-// import { userData } from '@/assets/dummyData';
 import { SubmitHandler } from 'react-hook-form';
-// import userDummyImage from "@/assets/userDummyImage.webp";
 import usePasswordHook from '@/hooks/usePasswordHook';
-import { Coffee, cartCoffeeItem } from '../Modals/modal';
+import { Coffee, cartCoffeeItem } from '../Models/interface';
 import { addToCart, CartItem, clearCart } from '../Redux/cartSlice';
 import { toast } from 'react-toastify';
-import { generateBill } from '@/lib/generateBill';
 import Skeleton from 'react-loading-skeleton'; // Import Skeleton from the library
 import 'react-loading-skeleton/dist/skeleton.css';
 
@@ -23,7 +17,7 @@ interface orderCartData {
 export interface Transaction {
     transactionId: string;
     stripeSessionId: string;
-    userId: string;
+    customerEmail: string;
     username: string;
     cartItems: orderCartData;
     totalAmount: number;
@@ -36,34 +30,30 @@ const Profile = () => {
     const { register: registerUser, handleSubmit: handleUserSubmit, formState: { errors: userErrors }, setValue, clearErrors } = useUserDetailsHook();
     const { register: changePassword, handleSubmit: handlePassword, formState: { errors: passwordErrors }, watch } = usePasswordHook();
     const [allTransactions, setAllTransactions] = useState<Transaction[]>();
-    const [filteredOrders, setFilteredOrders] = useState<Transaction[]>();
-    const [openDetails, setOpenDetails] = useState<string | null>(null);
     const [user, setUser] = useState<any>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [isChangePassword, setIsChangePassword] = useState(false);
     const [photo, setPhoto] = useState<string | null>(null);
-    const [coffeeProducts, setCoffeeProducts] = useState<Coffee[]>([]);
     const [loading, setLoading] = useState(true);
     const [backendPic, setBackendPic] = useState("")
 
-    const userId = localStorage.getItem("customerId")!;
-
-    // console.log("userId", userId)
+    const customerEmail = localStorage.getItem("customerEmail")!;
 
     useEffect(() => {
         const fetchUserDetails = async () => {
-            const response = await fetch(`/api/users/oneUser?id=${userId}`);
+            const response = await fetch(`/api/users/oneUser?email=${customerEmail}`);
             const data = await response.json();
-            // console.log("data => ", data)
+            console.log("users data => ", data)
             if (response.ok) {
                 setUser(data);
-                setValue('name', data.data.name);
-                setValue('addressLine1', data.data.addressLine1);
-                setValue('city', data.data.city);
-                setValue('email', data.data.email);
-                setValue('pinCode', data.data.pinCode);
-                setValue('phoneNumber', data.data.phoneNumber);
-                setPhoto(data.data.profilePic);
+                setValue('name', data.user.name);
+                setValue('addressLine1', data.user.addressLine1);
+                setValue('city', data.user.city);
+                setValue('state', data.user.state);
+                setValue('email', data.user.email);
+                setValue('pinCode', data.user.pinCode);
+                setValue('phoneNumber', data.user.phoneNumber);
+                setPhoto(data.user.profilePic);
             }
             setLoading(false)
         };
@@ -71,10 +61,10 @@ const Profile = () => {
     }, []);
 
     useEffect(() => {
-        if (userId) {
-            fetchOrderDetails(userId);
+        if (customerEmail) {
+            fetchOrderDetails(customerEmail);
         }
-    }, [userId]);
+    }, [customerEmail]);
 
     // ! profile pic change 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,7 +127,7 @@ const Profile = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ userData, customerId: userId })
+                body: JSON.stringify({ userData, customerEmail })
             });
 
             if (!response.ok) {
@@ -145,6 +135,7 @@ const Profile = () => {
             }
 
             const result = await response.json();
+            console.log("user data after update => ", result)
             toast.success("User details updated successfully");
             setUser({ ...user, ...data });
             setIsEditing(false);
@@ -164,7 +155,7 @@ const Profile = () => {
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ passD: passD.newPassword, customerId: userId })
+                body: JSON.stringify({ passD: passD.newPassword, customerId: customerEmail })
             });
 
             const updatedPass = await pass.json();
@@ -205,7 +196,15 @@ const Profile = () => {
                             loading ? (
                                 <Skeleton circle={true} height={128} width={128} />
                             ) : (
-                                <Image src={photo || ''} alt="User Photo" width={128} height={128} className="rounded-full" />
+                                photo ? (
+                                    <Image src={photo} alt="User Photo" width={128} height={128} className="rounded-full" />
+                                ) : (
+                                    <input
+                                        type="text" disabled={!isEditing}
+                                        {...registerUser('name')}
+                                        className={`border bg-gray-300 p-1 pl-2 md:p-2 rounded-lg ${userErrors.name ? 'border-red-500' : 'border-gray-300'}`}
+                                    />
+                                )
                             )
                         }
                         <input type="file" onChange={handlePhotoChange} className="hidden" id="photoInput" />

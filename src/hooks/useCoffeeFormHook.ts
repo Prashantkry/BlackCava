@@ -1,5 +1,5 @@
 import { useForm, Controller } from 'react-hook-form';
-import { Coffee } from '@/app/Modals/modal'; // Adjust path according to your folder structure
+import { Coffee } from '@/app/Models/interface'; // Adjust path according to your folder structure
 
 export const useCoffeeForm = (defaultValues?: Coffee) => {
   const {

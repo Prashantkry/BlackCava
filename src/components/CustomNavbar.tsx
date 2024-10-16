@@ -15,13 +15,9 @@ const CustomNavbar = () => {
     const pathname = usePathname();
     const router = useRouter();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    // useEffect(() => {
-    //     const token = localStorage.getItem('customerId');
-    //     token ? setIsAuthenticated(true) : setIsAuthenticated(false);
-    // }, []);
     useEffect(() => {
         const handleStorageChange = () => {
-          const token = localStorage.getItem('customerId');
+          const token = localStorage.getItem('customerEmail');
           token ? setIsAuthenticated(true) : setIsAuthenticated(false);
         };
         handleStorageChange(); 
@@ -45,7 +41,7 @@ const CustomNavbar = () => {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('customerId');
+        localStorage.removeItem('customerEmail');
         setIsAuthenticated(false);
         router.push('/');
     };
