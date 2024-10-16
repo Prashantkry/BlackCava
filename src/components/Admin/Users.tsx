@@ -12,7 +12,8 @@ const Users = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/users/allUsers");
+        // const response = await fetch("http://localhost:3000/api/users/allUsers");
+        const response = await fetch("/api/users/allUsers");
         const data = await response.json();
         console.log("Raw response user data:", data);
         if (data.success) {

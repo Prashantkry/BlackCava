@@ -9,9 +9,12 @@ import { Coffee, cartCoffeeItem } from "@/app/Models/interface";
 import { useState, useEffect } from "react";
 import { addToCart, CartItem } from '../Redux/cartSlice';
 
-const API_URL = "http://localhost:3000/api/products/cartItem";
-const API_URL_P = "http://localhost:3000/api/products/getProducts";
-const API_URL_C = "http://localhost:3000/api/payment";
+// const API_URL = "http://localhost:3000/api/products/cartItem";
+// const API_URL_P = "http://localhost:3000/api/products/getProducts";
+// const API_URL_C = "http://localhost:3000/api/payment";
+const API_URL = "/api/products/cartItem";
+const API_URL_P = "/api/products/getProducts";
+const API_URL_C = "/api/payment";
 
 const Page = () => {
   const dispatch = useDispatch();

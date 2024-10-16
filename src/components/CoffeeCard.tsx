@@ -76,7 +76,8 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
 
   const handleAddToCart = async () => {
     if (quantity === 0) {
-      const removeResponse = await fetch('http://localhost:3000/api/products/cartItem', {
+      // const removeResponse = await fetch('http://localhost:3000/api/products/cartItem', {
+      const removeResponse = await fetch('/api/products/cartItem', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -93,7 +94,8 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
       const index = cart.findIndex(item => item.productId == product.productId && item.size == selectedSize);
       if (index != -1) {
         console.log("frontend update api call");
-        const updateResponse = await fetch('http://localhost:3000/api/products/cartItem', {
+        // const updateResponse = await fetch('http://localhost:3000/api/products/cartItem', {
+        const updateResponse = await fetch('/api/products/cartItem', {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -106,7 +108,8 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
         }
       }
       else {
-        const addC = await fetch('http://localhost:3000/api/products/cartItem', {
+        // const addC = await fetch('http://localhost:3000/api/products/cartItem', {
+        const addC = await fetch('/api/products/cartItem', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

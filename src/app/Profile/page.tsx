@@ -152,7 +152,8 @@ const Profile = () => {
         // console.log("save pass => ", data);
         const passD = data;
         try {
-            const pass = await fetch(`http://localhost:3000/api/users/oneUser`, {
+            // const pass = await fetch(`http://localhost:3000/api/users/oneUser`, {
+            const pass = await fetch(`/api/users/oneUser`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"

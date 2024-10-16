@@ -9,7 +9,8 @@ const AuthPage = () => {
     const [isLogin, setIsLogin] = useState(true);
     const { register: authRegister, handleSubmit: authSubmit, formState: { errors: authErrors }, watch, reset } = useAuthHook();
     const navigate = useRouter();
-    const API_URL = isLogin ? "http://localhost:3000/api/signIn" : "http://localhost:3000/api/auth";
+    // const API_URL = isLogin ? "http://localhost:3000/api/signIn" : "http://localhost:3000/api/auth";
+    const API_URL = isLogin ? "/api/signIn" : "/api/auth";
 
     const onSubmit: SubmitHandler<any> = async (data) => {
         try {
