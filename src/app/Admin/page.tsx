@@ -37,7 +37,7 @@ const AdminPage: React.FC = () => {
   };
 
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={null}>
       <div className="relative flex h-screen">
         {/* Hamburger Menu for smaller screens */}
         <button
