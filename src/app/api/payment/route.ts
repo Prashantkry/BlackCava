@@ -1,9 +1,10 @@
+import { MongoClient } from 'mongodb';
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import dotenv from "dotenv";
-import connection from '@/utils/db';
 
 dotenv.config();
+const mongoUrl = process.env.NEXT_PUBLIC_MongoDB!;
 
 const stripeKey = process.env.NEXT_PUBLIC_STRIPE_SECRET_KEY as string;
 const stripe = new Stripe(stripeKey)
@@ -18,98 +19,112 @@ interface CartItem {
 export async function POST(req: NextRequest) {
     console.log("Payment API triggered");
 
-    try {
-        const { cartItems, customerId } = await req.json();
-        console.log("cartItems => ", cartItems, "customerId => ", customerId);
+    const { cartItems, customerEmail } = await req.json();
+    console.log("cartItems => ", cartItems, "customerEmail => ", customerEmail);
 
-        if (!cartItems || cartItems.length === 0) {
-            return NextResponse.json({ error: "Cart items are missing" }, { status: 400 });
-        } else if (!customerId) {
-            return NextResponse.json({ error: "Customer ID is missing" }, { status: 400 });
+    if (!cartItems || cartItems.length === 0) {
+        return NextResponse.json({ error: "Cart items are missing" }, { status: 400 });
+    } else if (!customerEmail) {
+        return NextResponse.json({ error: "Customer ID is missing" }, { status: 400 });
+    }
+
+    const line_items = cartItems.map((product: CartItem) => {
+        if (!product.pricePerQuantity) {
+            throw new Error(`Product ${product.name} is missing a price.`);
         }
 
-        const line_items = cartItems.map((product: CartItem) => {
-            if (!product.pricePerQuantity) {
-                throw new Error(`Product ${product.name} is missing a price.`);
-            }
-
-            return {
-                price_data: {
-                    currency: "inr",
-                    product_data: {
-                        name: product.name,
-                        description: `Size: ${product.size}`,
-                    },
-                    unit_amount: product.pricePerQuantity * 100,
+        return {
+            price_data: {
+                currency: "inr",
+                product_data: {
+                    name: product.name,
+                    description: `Size: ${product.size}`,
                 },
-                quantity: product.quantity,
-                // metadata: {
-                //     productId: product.productId, // Storing productId in metadata
-                // },
-            };
-        });
-
-        // Create a Stripe checkout session
-        const session = await stripe.checkout.sessions.create({
-            payment_method_types: ["card"],
-            line_items,
-            mode: "payment",
-            // phone_number_collection: {
-            //     enabled: true,
+                unit_amount: product.pricePerQuantity * 100,
+            },
+            quantity: product.quantity,
+            // metadata: {
+            //     productId: product.productId, // Storing productId in metadata
             // },
-            // shipping_address_collection: {
-            //     allowed_countries: ["US", "IN"],
-            // },
-            // custom_text: {
-            //     shipping_address: {
-            //         message: "Please note that we can't guarantee 2-day delivery for PO boxes at this time.",
-            //     },
-            //     submit: {
-            //         message: "We'll email you instructions on how to get started.",
-            //     },
-            // },
-            success_url: "http://localhost:3000/Success",
-            cancel_url: "http://localhost:3000",
-        });
-
-        // * want to save data in database
-
-        const createTableQuery = `
-            CREATE TABLE IF NOT EXISTS orderDetails (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                customerId VARCHAR(255) NOT NULL,
-                cartItems TEXT NOT NULL,
-                stripeSessionId VARCHAR(255) NOT NULL,
-                createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            );
-        `;
-        await connection.query(createTableQuery);
-
-        const insertOrderQuery = `
-            INSERT INTO orderDetails (customerId, cartItems, stripeSessionId)
-            VALUES (?, ?, ?)
-        `;
-
-        const orderData = {
-            customerId: customerId,
-            cartItems: JSON.stringify(cartItems),
-            stripeSessionId: session.id,
         };
+    });
 
-        const [result] = await connection.query(insertOrderQuery, [
-            orderData.customerId,
-            orderData.cartItems,
-            orderData.stripeSessionId,
-        ]);
+    // Create a Stripe checkout session
+    const session = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items,
+        mode: "payment",
+        // phone_number_collection: {
+        //     enabled: true,
+        // },
+        // shipping_address_collection: {
+        //     allowed_countries: ["US", "IN"],
+        // },
+        // custom_text: {
+        //     shipping_address: {
+        //         message: "Please note that we can't guarantee 2-day delivery for PO boxes at this time.",
+        //     },
+        //     submit: {
+        //         message: "We'll email you instructions on how to get started.",
+        //     },
+        // },
+        success_url: "http://localhost:3000/Success",
+        cancel_url: "http://localhost:3000",
+    });
 
-        console.log("Order details saved successfully:", result);
+    // * want to save data in database
 
+
+
+    // insert this details on mongo db 
+
+    let client: MongoClient;
+    try {
+        client = await MongoClient.connect(mongoUrl);
+        const db = client.db('blackCava');
+        const customersCollection = db.collection('customers');
+
+        // Find the customer by their email
+        const customer = await customersCollection.findOne({ email: customerEmail });
+
+        if (!customer) {
+            await customersCollection.insertOne({
+                name: '', 
+                email: customerEmail,
+                orders: [
+                    {
+                        cartItems: cartItems,
+                        stripeSessionId: session.id,
+                        createdAt: new Date(),
+                    }
+                ],
+                created_at: new Date()
+            });
+            console.log("New customer created and order saved");
+        } else {
+            await customersCollection.updateOne(
+                { email: customerEmail },
+                {
+                    $set: {
+                        orders: [...customer.orders, {
+                            cartItems: cartItems,
+                            stripeSessionId: session.id,
+                            createdAt: new Date(),
+                        }]
+                    }
+                }
+            );
+            console.log("Order appended to existing customer using $set");
+        }
         return NextResponse.json({ id: session.id, session, status: 200, message: "Payment session created successfully" });
     } catch (error) {
         console.error("Error creating payment session:", error);
         return NextResponse.json({ error: (error as Error).message }, { status: 500 });
     }
 }
+
+
+
 
 // Handle webhook events from Stripe
 // export async function webhookHandler(req: NextRequest) {

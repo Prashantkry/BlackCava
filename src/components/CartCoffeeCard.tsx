@@ -6,7 +6,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useState, useRef, useEffect } from "react";
 import { RootState } from "@/app/Redux/store";
 import { addToCart, removeFromCart } from "@/app/Redux/cartSlice";
-import { Coffee, cartCoffeeItem } from "../app/Modals/modal";
+import { Coffee, cartCoffeeItem } from "../app/Models/interface";
 import { toast } from "react-toastify";
 import Link from "next/link";
 
@@ -15,7 +15,7 @@ interface CartCoffeeCardProps {
   item: cartCoffeeItem;
 }
 
-const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {  
+const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
   const dispatch = useDispatch();
   const router = useRouter();
   const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large'>("small");
@@ -26,7 +26,7 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const cartItem = item;
-  const userId=localStorage.getItem("customerId")!;
+  const customerEmail = localStorage.getItem("customerEmail")!;
   useEffect(() => {
     if (cartItem) {
       setQuantity(cartItem.quantity);
@@ -68,48 +68,68 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
   };
 
   const handleSaveChanges = async () => {
-    console.log("delete F trig")
+    console.log("Updating cart item...");
     setIsEditing(false);
-    await fetch('http://localhost:3000/api/products/cartItem', {
-      method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ userId, productId: coffee.productId, size: selectedSize }),
-    });
-    if (quantity === 0) {
-      dispatch(removeFromCart({ userId, productId: coffee.productId, size: selectedSize, quantity: 0 }));
-      toast.success(
-        `${coffee.name} with size ${selectedSize} removed from cart`,
-        { autoClose: 1500 }
-      );
-    } else {
-      const addC = await fetch('http://localhost:3000/api/products/cartItem', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId: userId, productId: coffee.productId, size: selectedSize, quantity: quantity }),
-      });
-      if(addC.ok){
-        dispatch(addToCart({productId: coffee.productId,size: selectedSize,quantity: quantity,userId: userId,}));
+
+    try {
+      if (quantity === 0) {
+        await fetch('http://localhost:3000/api/products/cartItem', {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ customerEmail, productId: coffee.productId, size: selectedSize }),
+        });
+        dispatch(removeFromCart({ customerEmail, productId: coffee.productId, size: selectedSize, quantity: 0 }));
         toast.success(
-          `${coffee.name} added to cart with size ${selectedSize} and quantity ${quantity}`,
+          `${coffee.name} with size ${selectedSize} removed from cart`,
+          { autoClose: 1500 }
+        );
+      } else {
+        const updatedCart = cart.findIndex(
+          (item) => item.productId === coffee.productId && item.size === selectedSize
+        ); 
+        if (updatedCart != -1) {
+          await fetch('http://localhost:3000/api/products/cartItem', {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ customerEmail, productId: coffee.productId, size: selectedSize, quantity }),
+          });
+        }
+        else {
+          const addC = await fetch('http://localhost:3000/api/products/cartItem', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ customerEmail: customerEmail, productId: coffee.productId, size: selectedSize, quantity: quantity }),
+          });
+          const data = await addC.json();
+        }
+        dispatch(addToCart({ productId: coffee.productId, size: selectedSize, quantity, customerEmail }));
+        toast.success(
+          `${coffee.name} updated in cart with size ${selectedSize} and quantity ${quantity}`,
           { autoClose: 1500 }
         );
       }
+    } catch (error) {
+      console.error("Error updating cart item:", error);
+      toast.error('Error updating cart item', { autoClose: 1500 });
     }
   };
 
-  const handleRemoveFromCart =async () => {
+
+  const handleRemoveFromCart = async () => {
     await fetch('http://localhost:3000/api/products/cartItem', {
       method: 'DELETE',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ userId, productId: coffee.productId, size: selectedSize }),
+      body: JSON.stringify({ customerEmail, productId: coffee.productId, size: selectedSize }),
     });
-    dispatch(removeFromCart({ userId, productId: coffee.productId, size: selectedSize, quantity: 0 }));
+    dispatch(removeFromCart({ customerEmail, productId: coffee.productId, size: selectedSize, quantity: 0 }));
     toast.success(
       `${coffee.name} with size ${selectedSize} removed from cart`,
       { autoClose: 1500 }
@@ -176,27 +196,24 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
           <div className="flex items-center gap-4">
             <button
               onClick={() => handleSizeChange('small')}
-              className={`px-4 py-2 rounded ${
-                selectedSize === 'small' ? "bg-yellow-500" : "bg-gray-600"
-              } ${isEditing ? "" : "disabled:bg-gray-400"}`}
+              className={`px-4 py-2 rounded ${selectedSize === 'small' ? "bg-yellow-500" : "bg-gray-600"
+                } ${isEditing ? "" : "disabled:bg-gray-400"}`}
               disabled={!isEditing && selectedSize !== 'small'}
             >
               S
             </button>
             <button
               onClick={() => handleSizeChange('medium')}
-              className={`px-4 py-2 rounded ${
-                selectedSize === 'medium' ? "bg-yellow-500" : "bg-gray-600"
-              } ${isEditing ? "" : "disabled:bg-gray-400"}`}
+              className={`px-4 py-2 rounded ${selectedSize === 'medium' ? "bg-yellow-500" : "bg-gray-600"
+                } ${isEditing ? "" : "disabled:bg-gray-400"}`}
               disabled={!isEditing && selectedSize !== 'medium'}
             >
               M
             </button>
             <button
               onClick={() => handleSizeChange('large')}
-              className={`px-4 py-2 rounded ${
-                selectedSize === 'large' ? "bg-yellow-500" : "bg-gray-600"
-              } ${isEditing ? "" : "disabled:bg-gray-400"}`}
+              className={`px-4 py-2 rounded ${selectedSize === 'large' ? "bg-yellow-500" : "bg-gray-600"
+                } ${isEditing ? "" : "disabled:bg-gray-400"}`}
               disabled={!isEditing && selectedSize !== 'large'}
             >
               L

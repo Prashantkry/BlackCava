@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useSearchParams } from 'next/navigation'
-import { Coffee } from '../Modals/modal';
+import { Coffee } from '../Models/interface';
 import CoffeeCard from '@/components/CoffeeCard';
 
 // const API_URL = 'https://api.sampleapis.com/coffee/hot';
@@ -28,7 +28,7 @@ const ProductsPage = () => {
                     },
                 });
                 const data = await response.json();
-                // console.log('Raw response data:', data);
+                console.log('Raw response data:', data);
 
                 if (data.success = true) {
                     setProducts(data.data);

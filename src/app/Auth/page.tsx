@@ -28,9 +28,9 @@ const AuthPage = () => {
                     position: "top-right",
                     autoClose: 5000,
                 });
-                const customerId = await result.customerId;
-                console.log("customer id in signIn => ", customerId)
-                localStorage.setItem('customerId', customerId);
+                const customerEmail = await result.email;
+                console.log("customer id in signIn => ", customerEmail)
+                localStorage.setItem('customerEmail', customerEmail);
                 navigate.push("/")
             }
             else if (result.status === 201) {

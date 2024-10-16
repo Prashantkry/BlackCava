@@ -2,7 +2,7 @@ import Image from "next/image";
 // import coffeeDummyImage from "../assets/coffeeDummyImage.webp";
 import { FaShoppingCart, FaEllipsisH } from "react-icons/fa";
 import { toggleWishlist } from "../app/Redux/wishlistSlice";
-import { Coffee } from "../app/Modals/modal";
+import { Coffee } from "../app/Models/interface";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart, removeFromCart } from "@/app/Redux/cartSlice";
 import { useState, useRef, useEffect } from "react";
@@ -27,7 +27,7 @@ const FavoriteCoffeeCard: React.FC<FavoriteCoffeeCardProps> = ({ coffee }) => {
     (item) => item.productId === coffee.productId && item.size === selectedSize
   );
 
-  const userId = localStorage.getItem("customerId")!;
+  const customerEmail = localStorage.getItem("customerEmail")!;
 
   useEffect(() => {
     if (cartItem) {
@@ -80,11 +80,11 @@ const FavoriteCoffeeCard: React.FC<FavoriteCoffeeCardProps> = ({ coffee }) => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId, productId: coffee.productId, size: selectedSize }),
+        body: JSON.stringify({ customerEmail, productId: coffee.productId, size: selectedSize }),
       });
 
       if (removeResponse.ok) {
-        dispatch(removeFromCart({ userId, productId: coffee.productId, size: selectedSize, quantity: 0 }));
+        dispatch(removeFromCart({ customerEmail, productId: coffee.productId, size: selectedSize, quantity: 0 }));
         toast.success(`${coffee.name} with size ${selectedSize} removed from cart`, { autoClose: 1500 });
       }
     } else {
@@ -96,7 +96,7 @@ const FavoriteCoffeeCard: React.FC<FavoriteCoffeeCardProps> = ({ coffee }) => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ userId, productId: coffee.productId, size: selectedSize, quantity }),
+          body: JSON.stringify({ customerEmail, productId: coffee.productId, size: selectedSize, quantity }),
         });
 
         if (updateResponse.ok) {
@@ -109,12 +109,12 @@ const FavoriteCoffeeCard: React.FC<FavoriteCoffeeCardProps> = ({ coffee }) => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ userId: userId, productId: coffee.productId, size: selectedSize, quantity: quantity }),
+          body: JSON.stringify({ customerEmail: customerEmail, productId: coffee.productId, size: selectedSize, quantity: quantity }),
         });
         const data = await addC.json();
         // console.log("data => ", data);
       }
-      dispatch(addToCart({ userId: userId, productId: coffee.productId, size: selectedSize, quantity: quantity }));
+      dispatch(addToCart({ customerEmail: customerEmail, productId: coffee.productId, size: selectedSize, quantity: quantity }));
       toast.success(`${coffee.name} added to cart with size ${selectedSize} and quantity ${quantity}`, { autoClose: 1500 });
     }
   };
@@ -142,7 +142,7 @@ const FavoriteCoffeeCard: React.FC<FavoriteCoffeeCardProps> = ({ coffee }) => {
         <div>
           <span className="text-yellow-500 font-bold">
             Price: $
-            {coffee[selectedSize]}
+            {coffee.sizes[selectedSize]}
           </span>
           <div className="flex justify-between items-center mt-2 w-full gap-2">
             <div className="flex space-x-2">

@@ -1,59 +1,96 @@
 import { NextRequest, NextResponse } from 'next/server';
-import connection from '@/utils/db';
 import bcrypt from 'bcryptjs';
+import { MongoClient, ObjectId } from 'mongodb';
+
+const mongoUrl = process.env.NEXT_PUBLIC_MongoDB!;
 
 // ! Get user by ID
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const userId = searchParams.get('id');
-  if (!userId) {
-    return NextResponse.json({ success: false, message: 'User ID is required' }, { status: 400 });
+  const customerEmail = searchParams.get('email');
+  // console.log("customerEmail => ", customerEmail);
+
+  if (!customerEmail) {
+    return NextResponse.json({ success: false, message: 'User ID is required', status: 400 });
   }
+
   try {
-    const [rows, fields]: [any[], any[]] = await connection.query('SELECT * FROM customers WHERE id = ?', [userId]);
-    if (rows.length === 0) {
-      return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
+    const client = new MongoClient(mongoUrl);
+    await client.connect();
+    const db = client.db('blackCava');
+    const usersCollection = db.collection('customers');
+
+    const user = await usersCollection.findOne({ email: customerEmail });
+    // console.log("User => ", user);
+
+    if (!user) {
+      return NextResponse.json({ success: false, message: 'User not found', status: 404 });
     }
-    return NextResponse.json({ success: true, data: rows[0] });
+
+    return NextResponse.json({ success: true, user, status: 200 });
+
   } catch (error) {
     console.error('Error fetching user:', error);
-    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'Internal server error', status: 500 });
   }
 }
+
 
 
 // ! Update user by ID and password 
 export async function PUT(req: NextRequest) {
   console.log("Update user API triggered");
-  const { userData, passD, customerId } = await req.json();
-  console.log("userData => ", userData, "customerId => ", customerId, "passD => ", passD);
-  if (!customerId) {
-    return NextResponse.json({ success: false, message: 'User ID is required' }, { status: 400 });
+
+  const { userData, passD, customerEmail } = await req.json();
+  // console.log("userData => ", userData, "customerEmail => ", customerEmail, "passD => ", passD);
+  console.log("customerEmail => ", customerEmail, "passD => ", passD);
+
+  if (!customerEmail) {
+    return NextResponse.json({ success: false, message: 'User email is required', status: 400 });
   }
 
-  // * update password if passD is present
-  if (passD!=undefined) {
-    console.log("password update triggered");
+  const client = new MongoClient(mongoUrl);
+  await client.connect();
+  const db = client.db('blackCava');
+  const usersCollection = db.collection('customers');
+
+  if (passD !== undefined) {
+    console.log("Password update triggered");
     try {
       const hashedPassword = await bcrypt.hash(passD, 10);
-      await connection.query('UPDATE customers SET password = ? WHERE id = ?', [hashedPassword, customerId]);
-      return NextResponse.json({ success: true, message: 'Password updated successfully' });
-  } catch (error) {
+      await usersCollection.updateOne(
+        { email: customerEmail },
+        { $set: { password: hashedPassword } }
+      );
+      return NextResponse.json({ success: true, message: 'Password updated successfully', status: 200 });
+    } catch (error) {
       console.error('Error updating password:', error);
-      return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
-  }
+      return NextResponse.json({ success: false, message: 'Internal server error', status: 500 });
+    }
   }
 
-  // * update user data
   const { name, email, phoneNumber, addressLine1, city, state, pinCode, profilePic } = userData;
   try {
-    await connection.query(
-      'UPDATE customers SET name = ?, email = ?, phoneNumber = ?, addressLine1 = ?, city = ?, state = ?, pinCode = ?, profilePic = ? WHERE id = ?',
-      [name, email, phoneNumber, addressLine1, city, state, pinCode, profilePic, customerId]
+    await usersCollection.updateOne(
+      { email: customerEmail },
+      {
+        $set: {
+          name,
+          email,
+          phoneNumber,
+          addressLine1,
+          city,
+          state,
+          pinCode,
+          profilePic
+        }
+      }
     );
-    return NextResponse.json({ success: true, message: 'User updated successfully' });
+    return NextResponse.json({ success: true, message: 'User updated successfully', status: 200 });
   } catch (error) {
     console.error('Error updating user:', error);
-    return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ success: false, message: 'Internal server error', status: 500 });
+  } finally {
+    await client.close();
   }
 }
