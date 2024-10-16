@@ -11,7 +11,10 @@ import Skeleton from 'react-loading-skeleton'; // Import Skeleton from the libra
 import 'react-loading-skeleton/dist/skeleton.css';
 
 interface orderCartData {
-
+    name: string;
+    quantity: number;
+    size: string;
+    pricePerQuantity: number;
 }
 
 export interface Transaction {
@@ -37,8 +40,12 @@ const Profile = () => {
     const [loading, setLoading] = useState(true);
     const [backendPic, setBackendPic] = useState("")
 
-    const customerEmail = localStorage.getItem("customerEmail")!;
+    let customerEmail: string | null = null;
 
+    if (typeof window !== 'undefined') {
+      customerEmail = localStorage.getItem("customerEmail");
+    }
+    
     useEffect(() => {
         const fetchUserDetails = async () => {
             const response = await fetch(`/api/users/oneUser?email=${customerEmail}`);
@@ -80,6 +87,7 @@ const Profile = () => {
         }
     };
 
+    // ! fetch order details
     const fetchOrderDetails = async (customerId: string) => {
         try {
             const response = await fetch(`/api/getOrders?customerId=${customerId}`);
@@ -87,14 +95,8 @@ const Profile = () => {
             console.log("order data => ", result);
 
             if (response.ok && result.success) {
-                // Parsing the cartItems field
-                const ordersWithParsedItems = result.data.map((order: any) => ({
-                    ...order,
-                    cartItems: JSON.parse(order.cartItems),
-                }));
-
-                setAllTransactions(ordersWithParsedItems);
-                console.log("ordersWithParsedItems => ", ordersWithParsedItems)
+                setAllTransactions(result.orders);
+                console.log("ordersWithParsedItems => ", result.orders);
             } else {
                 console.error('Failed to fetch orders:', result.message);
             }
@@ -372,60 +374,42 @@ const Profile = () => {
                             </thead>
                             <tbody className="bg-gray-700">
                                 {allTransactions && allTransactions.length ? (
-                                    allTransactions.map((order: Transaction) => (
-                                        <React.Fragment key={order.transactionId}>
-                                            <tr className="hover:bg-gray-600 transition-colors text-left duration-200">
-                                                <td
-                                                    className="border-b border-gray-600 py-2 px-4 max-w-[2vw] overflow-hidden cursor-pointer"
-                                                    onClick={() => handleCopyToClipboard(order.stripeSessionId)}
-                                                    title="Click to copy Order ID"
-                                                >
-                                                    {order.stripeSessionId.split('_').slice(0, 4).join('_') + (order.stripeSessionId.split('_').length > 4 ? '...' : '')}
-                                                </td>
-                                                <td className="border-b border-gray-600 py-2 px-4">
-                                                    {new Date(order.createdAt).toLocaleString([], {
-                                                        year: 'numeric',
-                                                        month: '2-digit',
-                                                        day: '2-digit',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                        hour12: false
-                                                    })}
-                                                </td>
-                                                <td className="border-b border-gray-600 py-2 px-4">
-                                                    {order.cartItems && Array.isArray(order.cartItems) ? (
-                                                        order.cartItems.map(item => item.name).join(', ')
-                                                    ) : (
-                                                        ''
-                                                    )}
-                                                </td>
-                                                <td className="border-b border-gray-600 py-2 px-4">
-                                                    {order.cartItems && Array.isArray(order.cartItems) ? (
-                                                        order.cartItems.map(item => item.quantity).join(', ')
-                                                    ) : (
-                                                        0
-                                                    )}
-                                                </td>
-                                                <td className="border-b border-gray-600 py-2 px-4">
-                                                    {order.cartItems && Array.isArray(order.cartItems) ? (
-                                                        order.cartItems.map(item => item.size.charAt(0)).join(', ')
-                                                    ) : (
-                                                        0
-                                                    )}
-                                                </td>
-                                                <td className="border-b border-gray-600 py-2 px-4">
-                                                    &#8377;  {order.cartItems && Array.isArray(order.cartItems) ? (
-                                                        order.cartItems.reduce((total: number, item) => total + (item.pricePerQuantity * item.quantity || 0), 0)
-                                                    ) : (
-                                                        0
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        </React.Fragment>
+                                    allTransactions.map((order) => (
+                                        <tr key={order.stripeSessionId} className="hover:bg-gray-600 transition-colors text-left duration-200">
+                                            <td
+                                                className="border-b border-gray-600 py-2 px-4 max-w-[2vw] overflow-hidden cursor-pointer"
+                                                onClick={() => handleCopyToClipboard(order.stripeSessionId)}
+                                                title="Click to copy Order ID"
+                                            >
+                                                {order.stripeSessionId.split('_').slice(0, 4).join('_') + (order.stripeSessionId.split('_').length > 4 ? '...' : '')}
+                                            </td>
+                                            <td className="border-b border-gray-600 py-2 px-4">
+                                                {new Date(order.createdAt).toLocaleString([], {
+                                                    year: 'numeric',
+                                                    month: '2-digit',
+                                                    day: '2-digit',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false
+                                                })}
+                                            </td>
+                                            <td className="border-b border-gray-600 py-2 px-4">
+                                                {order.cartItems?.name || 'N/A'}
+                                            </td>
+                                            <td className="border-b border-gray-600 py-2 px-4">
+                                                {order.cartItems?.quantity || 0}
+                                            </td>
+                                            <td className="border-b border-gray-600 py-2 px-4">
+                                                {order.cartItems?.size.charAt(0) || 'N/A'}
+                                            </td>
+                                            <td className="border-b border-gray-600 py-2 px-4">
+                                                &#8377; {order.cartItems?.pricePerQuantity * order.cartItems?.quantity || 0}
+                                            </td>
+                                        </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={5} className="text-center py-4 text-yellow-500">
+                                        <td colSpan={6} className="text-center py-4 text-yellow-500">
                                             No orders available
                                         </td>
                                     </tr>
@@ -433,7 +417,6 @@ const Profile = () => {
                             </tbody>
                         </table>
                     </div>
-
                 </div>
 
             </div>

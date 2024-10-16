@@ -26,7 +26,13 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
   const cardRef = useRef<HTMLDivElement | null>(null);
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const cartItem = item;
-  const customerEmail = localStorage.getItem("customerEmail")!;
+
+  let customerEmail: string;
+  if (typeof window !== 'undefined') {
+    customerEmail = localStorage.getItem("customerEmail") || "";
+  }
+
+
   useEffect(() => {
     if (cartItem) {
       setQuantity(cartItem.quantity);
@@ -88,7 +94,7 @@ const CartCoffeeCard: React.FC<CartCoffeeCardProps> = ({ coffee, item }) => {
       } else {
         const updatedCart = cart.findIndex(
           (item) => item.productId === coffee.productId && item.size === selectedSize
-        ); 
+        );
         if (updatedCart != -1) {
           await fetch('http://localhost:3000/api/products/cartItem', {
             method: 'PUT',

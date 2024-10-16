@@ -178,7 +178,7 @@ const AddNewProduct: React.FC = () => {
         {/* Sizes and Prices */}
         <div className="flex justify-between space-y-4 md:space-y-0 md:space-x-6">
           <Controller
-            name='small'
+            name='sizes.small'
             control={control}
             rules={{
               required: `small Size Price is required`,
@@ -192,7 +192,7 @@ const AddNewProduct: React.FC = () => {
                 type="number" min={0}
                 placeholder={`small Size Price`}
                 className="w-full p-2 border rounded-md"
-                value={field.value != null ? field.value : ''}
+                value={typeof field.value === 'number' ? field.value : ''}
                 onChange={(e) => {
                   field.onChange(e);
                 }}
@@ -200,7 +200,7 @@ const AddNewProduct: React.FC = () => {
             )}
           />
           <Controller
-            name='medium'
+            name='sizes.medium'
             control={control}
             rules={{
               required: `Medium Size Price is required`,
@@ -214,7 +214,7 @@ const AddNewProduct: React.FC = () => {
                 type="number" min={0}
                 placeholder={`medium Size Price`}
                 className="w-full p-2 border rounded-md"
-                value={field.value !== null ? field.value : ''}
+                value={typeof field.value === 'number' ? field.value : ''}
                 onChange={(e) => {
                   field.onChange(e);
                 }}
@@ -222,7 +222,7 @@ const AddNewProduct: React.FC = () => {
             )}
           />
           <Controller
-            name='large'
+            name='sizes.large'
             control={control}
             rules={{
               required: `large Size Price is required`,
@@ -236,7 +236,7 @@ const AddNewProduct: React.FC = () => {
                 type="number" min={0}
                 placeholder={`large Size Price`}
                 className="w-full p-2 border rounded-md"
-                value={field.value !== null ? field.value : ''}
+                value={typeof field.value === 'number' ? field.value : ''}
                 onChange={(e) => {
                   field.onChange(e);
                 }}
