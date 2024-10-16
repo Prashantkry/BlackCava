@@ -40,8 +40,12 @@ const Profile = () => {
     const [loading, setLoading] = useState(true);
     const [backendPic, setBackendPic] = useState("")
 
-    const customerEmail = localStorage.getItem("customerEmail")!;
+    let customerEmail: string | null = null;
 
+    if (typeof window !== 'undefined') {
+      customerEmail = localStorage.getItem("customerEmail");
+    }
+    
     useEffect(() => {
         const fetchUserDetails = async () => {
             const response = await fetch(`/api/users/oneUser?email=${customerEmail}`);

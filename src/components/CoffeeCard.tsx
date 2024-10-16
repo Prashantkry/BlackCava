@@ -26,7 +26,14 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
   const [selectedSize, setSelectedSize] = useState<'small' | 'medium' | 'large'>('medium');
   const isInWishlist = wishlist.includes(product.productId);
   const cardRef = useRef<HTMLDivElement | null>(null);
-  const customerEmail = localStorage.getItem("customerEmail")!;
+
+  let customerEmail: string | null = null;
+
+  if (typeof window !== 'undefined') {
+    customerEmail = localStorage.getItem("customerEmail");
+  }
+
+
   const cartItem = cart.find((item) => item.productId === product.productId && item.size === selectedSize);
   useEffect(() => {
     if (cartItem) {
@@ -47,7 +54,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [cartItem]);
-  
+
   const handleSizeChange = (size: 'small' | 'medium' | 'large') => {
     setSelectedSize(size);
     const newCartItem = cart.find((item) => item.productId === product.productId && item.size === size);
@@ -78,11 +85,11 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
       });
 
       if (removeResponse.ok) {
-        dispatch(removeFromCart({ customerEmail, productId: product.productId, size: selectedSize, quantity: 0 }));
+        dispatch(removeFromCart({ customerEmail: customerEmail || '', productId: product.productId, size: selectedSize, quantity: 0 }));
         toast.success(`${product.name} with size ${selectedSize} removed from cart`, { autoClose: 1500 });
       }
     } else {
-      console.log("Product => ",product,"selectedSize => ",selectedSize)
+      console.log("Product => ", product, "selectedSize => ", selectedSize)
       const index = cart.findIndex(item => item.productId == product.productId && item.size == selectedSize);
       if (index != -1) {
         console.log("frontend update api call");
@@ -109,7 +116,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
         const data = await addC.json();
         // console.log("data => ", data);
       }
-      dispatch(addToCart({ customerEmail: customerEmail, productId: product.productId, size: selectedSize, quantity: quantity }));
+      dispatch(addToCart({ customerEmail: customerEmail || '', productId: product.productId, size: selectedSize, quantity: quantity }));
       toast.success(`${product.name} added to cart with size ${selectedSize} and quantity ${quantity}`, { autoClose: 1500 });
     }
   };

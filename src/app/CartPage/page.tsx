@@ -110,6 +110,8 @@ const Page = () => {
     fetchAndProcessData();
   }, []);
 
+  const publicKey =
+    "pk_test_51OUipuSD6rEtgA3HR4Yb5I0b10ADtBgl6owKQJmZLFxQiBkdVKPUvGQiJcizlvyXgU3QnsThHOpYDSaEDzWKOsfE00YXM24aQr";
   const customerEmail = localStorage.getItem("customerEmail");
   const checkoutPlan = async () => {
     const pay = await fetch(`${API_URL_C}`, {

@@ -31,7 +31,11 @@ const ProductDetailsPage: React.FC = () => {
   const [quantity, setQuantity] = useState<number>(1);
   const [showQuantityInput, setShowQuantityInput] = useState(false);
   const isInWishlist = wishlist.some((item) => item === coffee?.productId);
-  const customerEmail = localStorage.getItem("customerEmail")!;
+
+  let customerEmail: string | null = null;
+  if (typeof window !== 'undefined') {
+    customerEmail = localStorage.getItem("customerEmail");
+  }
   // const cartItem = cart.find((item) => item.productId === coffee?.id && item.size === selectedSize);
 
   const waitFn = async () => {
