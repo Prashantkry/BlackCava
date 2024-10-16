@@ -92,7 +92,7 @@ const ProductDetailsPage: React.FC = () => {
         productId: coffee!.productId,
         size: selectedSize,
         quantity: 0,
-        customerEmail: customerEmail,
+        customerEmail: customerEmail || "",
       })
     );
     if (quantity === 0) {
@@ -106,7 +106,7 @@ const ProductDetailsPage: React.FC = () => {
           productId: coffee!.productId,
           size: selectedSize,
           quantity: quantity,
-          customerEmail: customerEmail,
+          customerEmail: customerEmail || "",
         })
       );
       toast.success(
