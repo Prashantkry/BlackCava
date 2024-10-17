@@ -1,29 +1,26 @@
 'use client';
 import Image from 'next/image';
-import { FaHeart } from 'react-icons/fa';
-import { useDispatch } from 'react-redux';
 import React, { useState, useEffect } from 'react';
 import useUserDetailsHook from '@/hooks/useUserDetailsHook';
-// import { transactionsData, coffeeData } from '@/assets/dummyData';
-// import { userData } from '@/assets/dummyData';
 import { SubmitHandler } from 'react-hook-form';
-// import userDummyImage from "@/assets/userDummyImage.webp";
 import usePasswordHook from '@/hooks/usePasswordHook';
-import { Coffee, cartCoffeeItem } from '../Modals/modal';
+import { Coffee, cartCoffeeItem } from '../Models/interface';
 import { addToCart, CartItem, clearCart } from '../Redux/cartSlice';
 import { toast } from 'react-toastify';
-import { generateBill } from '@/lib/generateBill';
 import Skeleton from 'react-loading-skeleton'; // Import Skeleton from the library
 import 'react-loading-skeleton/dist/skeleton.css';
 
 interface orderCartData {
-
+    name: string;
+    quantity: number;
+    size: string;
+    pricePerQuantity: number;
 }
 
 export interface Transaction {
     transactionId: string;
     stripeSessionId: string;
-    userId: string;
+    customerEmail: string;
     username: string;
     cartItems: orderCartData;
     totalAmount: number;
@@ -36,34 +33,34 @@ const Profile = () => {
     const { register: registerUser, handleSubmit: handleUserSubmit, formState: { errors: userErrors }, setValue, clearErrors } = useUserDetailsHook();
     const { register: changePassword, handleSubmit: handlePassword, formState: { errors: passwordErrors }, watch } = usePasswordHook();
     const [allTransactions, setAllTransactions] = useState<Transaction[]>();
-    const [filteredOrders, setFilteredOrders] = useState<Transaction[]>();
-    const [openDetails, setOpenDetails] = useState<string | null>(null);
     const [user, setUser] = useState<any>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [isChangePassword, setIsChangePassword] = useState(false);
     const [photo, setPhoto] = useState<string | null>(null);
-    const [coffeeProducts, setCoffeeProducts] = useState<Coffee[]>([]);
     const [loading, setLoading] = useState(true);
     const [backendPic, setBackendPic] = useState("")
 
-    const userId = localStorage.getItem("customerId")!;
+    let customerEmail: string | null = null;
 
-    // console.log("userId", userId)
-
+    if (typeof window !== 'undefined') {
+      customerEmail = localStorage.getItem("customerEmail");
+    }
+    
     useEffect(() => {
         const fetchUserDetails = async () => {
-            const response = await fetch(`/api/users/oneUser?id=${userId}`);
+            const response = await fetch(`/api/users/oneUser?email=${customerEmail}`);
             const data = await response.json();
-            // console.log("data => ", data)
+            console.log("users data => ", data)
             if (response.ok) {
                 setUser(data);
-                setValue('name', data.data.name);
-                setValue('addressLine1', data.data.addressLine1);
-                setValue('city', data.data.city);
-                setValue('email', data.data.email);
-                setValue('pinCode', data.data.pinCode);
-                setValue('phoneNumber', data.data.phoneNumber);
-                setPhoto(data.data.profilePic);
+                setValue('name', data.user.name);
+                setValue('addressLine1', data.user.addressLine1);
+                setValue('city', data.user.city);
+                setValue('state', data.user.state);
+                setValue('email', data.user.email);
+                setValue('pinCode', data.user.pinCode);
+                setValue('phoneNumber', data.user.phoneNumber);
+                setPhoto(data.user.profilePic);
             }
             setLoading(false)
         };
@@ -71,10 +68,10 @@ const Profile = () => {
     }, []);
 
     useEffect(() => {
-        if (userId) {
-            fetchOrderDetails(userId);
+        if (customerEmail) {
+            fetchOrderDetails(customerEmail);
         }
-    }, [userId]);
+    }, [customerEmail]);
 
     // ! profile pic change 
     const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,6 +87,7 @@ const Profile = () => {
         }
     };
 
+    // ! fetch order details
     const fetchOrderDetails = async (customerId: string) => {
         try {
             const response = await fetch(`/api/getOrders?customerId=${customerId}`);
@@ -97,14 +95,8 @@ const Profile = () => {
             console.log("order data => ", result);
 
             if (response.ok && result.success) {
-                // Parsing the cartItems field
-                const ordersWithParsedItems = result.data.map((order: any) => ({
-                    ...order,
-                    cartItems: JSON.parse(order.cartItems),
-                }));
-
-                setAllTransactions(ordersWithParsedItems);
-                console.log("ordersWithParsedItems => ", ordersWithParsedItems)
+                setAllTransactions(result.orders);
+                console.log("ordersWithParsedItems => ", result.orders);
             } else {
                 console.error('Failed to fetch orders:', result.message);
             }
@@ -137,7 +129,7 @@ const Profile = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ userData, customerId: userId })
+                body: JSON.stringify({ userData, customerEmail })
             });
 
             if (!response.ok) {
@@ -145,6 +137,7 @@ const Profile = () => {
             }
 
             const result = await response.json();
+            console.log("user data after update => ", result)
             toast.success("User details updated successfully");
             setUser({ ...user, ...data });
             setIsEditing(false);
@@ -159,12 +152,13 @@ const Profile = () => {
         // console.log("save pass => ", data);
         const passD = data;
         try {
-            const pass = await fetch(`http://localhost:3000/api/users/oneUser`, {
+            // const pass = await fetch(`http://localhost:3000/api/users/oneUser`, {
+            const pass = await fetch(`/api/users/oneUser`, {
                 method: "PUT",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ passD: passD.newPassword, customerId: userId })
+                body: JSON.stringify({ passD: passD.newPassword, customerId: customerEmail })
             });
 
             const updatedPass = await pass.json();
@@ -205,7 +199,15 @@ const Profile = () => {
                             loading ? (
                                 <Skeleton circle={true} height={128} width={128} />
                             ) : (
-                                <Image src={photo || ''} alt="User Photo" width={128} height={128} className="rounded-full" />
+                                photo ? (
+                                    <Image src={photo} alt="User Photo" width={128} height={128} className="rounded-full" />
+                                ) : (
+                                    <input
+                                        type="text" disabled={!isEditing}
+                                        {...registerUser('name')}
+                                        className={`border bg-gray-300 p-1 pl-2 md:p-2 rounded-lg ${userErrors.name ? 'border-red-500' : 'border-gray-300'}`}
+                                    />
+                                )
                             )
                         }
                         <input type="file" onChange={handlePhotoChange} className="hidden" id="photoInput" />
@@ -373,60 +375,42 @@ const Profile = () => {
                             </thead>
                             <tbody className="bg-gray-700">
                                 {allTransactions && allTransactions.length ? (
-                                    allTransactions.map((order: Transaction) => (
-                                        <React.Fragment key={order.transactionId}>
-                                            <tr className="hover:bg-gray-600 transition-colors text-left duration-200">
-                                                <td
-                                                    className="border-b border-gray-600 py-2 px-4 max-w-[2vw] overflow-hidden cursor-pointer"
-                                                    onClick={() => handleCopyToClipboard(order.stripeSessionId)}
-                                                    title="Click to copy Order ID"
-                                                >
-                                                    {order.stripeSessionId.split('_').slice(0, 4).join('_') + (order.stripeSessionId.split('_').length > 4 ? '...' : '')}
-                                                </td>
-                                                <td className="border-b border-gray-600 py-2 px-4">
-                                                    {new Date(order.createdAt).toLocaleString([], {
-                                                        year: 'numeric',
-                                                        month: '2-digit',
-                                                        day: '2-digit',
-                                                        hour: '2-digit',
-                                                        minute: '2-digit',
-                                                        hour12: false
-                                                    })}
-                                                </td>
-                                                <td className="border-b border-gray-600 py-2 px-4">
-                                                    {order.cartItems && Array.isArray(order.cartItems) ? (
-                                                        order.cartItems.map(item => item.name).join(', ')
-                                                    ) : (
-                                                        ''
-                                                    )}
-                                                </td>
-                                                <td className="border-b border-gray-600 py-2 px-4">
-                                                    {order.cartItems && Array.isArray(order.cartItems) ? (
-                                                        order.cartItems.map(item => item.quantity).join(', ')
-                                                    ) : (
-                                                        0
-                                                    )}
-                                                </td>
-                                                <td className="border-b border-gray-600 py-2 px-4">
-                                                    {order.cartItems && Array.isArray(order.cartItems) ? (
-                                                        order.cartItems.map(item => item.size.charAt(0)).join(', ')
-                                                    ) : (
-                                                        0
-                                                    )}
-                                                </td>
-                                                <td className="border-b border-gray-600 py-2 px-4">
-                                                    &#8377;  {order.cartItems && Array.isArray(order.cartItems) ? (
-                                                        order.cartItems.reduce((total: number, item) => total + (item.pricePerQuantity * item.quantity || 0), 0)
-                                                    ) : (
-                                                        0
-                                                    )}
-                                                </td>
-                                            </tr>
-                                        </React.Fragment>
+                                    allTransactions.map((order) => (
+                                        <tr key={order.stripeSessionId} className="hover:bg-gray-600 transition-colors text-left duration-200">
+                                            <td
+                                                className="border-b border-gray-600 py-2 px-4 max-w-[2vw] overflow-hidden cursor-pointer"
+                                                onClick={() => handleCopyToClipboard(order.stripeSessionId)}
+                                                title="Click to copy Order ID"
+                                            >
+                                                {order.stripeSessionId.split('_').slice(0, 4).join('_') + (order.stripeSessionId.split('_').length > 4 ? '...' : '')}
+                                            </td>
+                                            <td className="border-b border-gray-600 py-2 px-4">
+                                                {new Date(order.createdAt).toLocaleString([], {
+                                                    year: 'numeric',
+                                                    month: '2-digit',
+                                                    day: '2-digit',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false
+                                                })}
+                                            </td>
+                                            <td className="border-b border-gray-600 py-2 px-4">
+                                                {order.cartItems?.name || 'N/A'}
+                                            </td>
+                                            <td className="border-b border-gray-600 py-2 px-4">
+                                                {order.cartItems?.quantity || 0}
+                                            </td>
+                                            <td className="border-b border-gray-600 py-2 px-4">
+                                                {order.cartItems?.size.charAt(0) || 'N/A'}
+                                            </td>
+                                            <td className="border-b border-gray-600 py-2 px-4">
+                                                &#8377; {order.cartItems?.pricePerQuantity * order.cartItems?.quantity || 0}
+                                            </td>
+                                        </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={5} className="text-center py-4 text-yellow-500">
+                                        <td colSpan={6} className="text-center py-4 text-yellow-500">
                                             No orders available
                                         </td>
                                     </tr>
@@ -434,7 +418,6 @@ const Profile = () => {
                             </tbody>
                         </table>
                     </div>
-
                 </div>
 
             </div>

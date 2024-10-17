@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Controller } from 'react-hook-form';
 import { v4 as uuidv4 } from 'uuid';
 import { useCoffeeForm } from '@/hooks/useCoffeeFormHook'; // Adjust the path
-import { Coffee } from '@/app/Modals/modal'; // Adjust the path
+import { Coffee } from '@/app/Models/interface'; // Adjust the path
 import { toast } from 'react-toastify';
 import Image from 'next/image';
 
@@ -178,7 +178,7 @@ const AddNewProduct: React.FC = () => {
         {/* Sizes and Prices */}
         <div className="flex justify-between space-y-4 md:space-y-0 md:space-x-6">
           <Controller
-            name='small'
+            name='sizes.small'
             control={control}
             rules={{
               required: `Small Size Price is required`,
@@ -193,14 +193,16 @@ const AddNewProduct: React.FC = () => {
                 min={0}
                 placeholder="Small Size Price"
                 className="w-full p-2 border rounded-md"
-                value={field.value ?? ''}  // Use `field.value ?? ''` to handle undefined or null values
-                onChange={(e) => field.onChange(e.target.valueAsNumber)}  // Use `valueAsNumber` to properly handle numeric input
+                value={typeof field.value === 'number' ? field.value : ''}
+                onChange={(e) => {
+                  field.onChange(e);
+                }}
               />
             )}
           />
 
           <Controller
-            name='medium'
+            name='sizes.medium'
             control={control}
             rules={{
               required: `Medium Size Price is required`,
@@ -215,14 +217,16 @@ const AddNewProduct: React.FC = () => {
                 min={0}
                 placeholder="Medium Size Price"
                 className="w-full p-2 border rounded-md"
-                value={field.value ?? ''}
-                onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                value={typeof field.value === 'number' ? field.value : ''}
+                onChange={(e) => {
+                  field.onChange(e);
+                }}
               />
             )}
           />
 
           <Controller
-            name='large'
+            name='sizes.large'
             control={control}
             rules={{
               required: `Large Size Price is required`,
@@ -237,8 +241,10 @@ const AddNewProduct: React.FC = () => {
                 min={0}
                 placeholder="Large Size Price"
                 className="w-full p-2 border rounded-md"
-                value={field.value ?? ''}
-                onChange={(e) => field.onChange(e.target.valueAsNumber)}
+                value={typeof field.value === 'number' ? field.value : ''}
+                onChange={(e) => {
+                  field.onChange(e);
+                }}
               />
             )}
           />

@@ -9,7 +9,8 @@ const AuthPage = () => {
     const [isLogin, setIsLogin] = useState(true);
     const { register: authRegister, handleSubmit: authSubmit, formState: { errors: authErrors }, watch, reset } = useAuthHook();
     const navigate = useRouter();
-    const API_URL = isLogin ? "http://localhost:3000/api/signIn" : "http://localhost:3000/api/auth";
+    // const API_URL = isLogin ? "http://localhost:3000/api/signIn" : "http://localhost:3000/api/auth";
+    const API_URL = isLogin ? "/api/signIn" : "/api/auth";
 
     const onSubmit: SubmitHandler<any> = async (data) => {
         try {
@@ -28,9 +29,9 @@ const AuthPage = () => {
                     position: "top-right",
                     autoClose: 5000,
                 });
-                const customerId = await result.customerId;
-                console.log("customer id in signIn => ", customerId)
-                localStorage.setItem('customerId', customerId);
+                const customerEmail = await result.email;
+                console.log("customer id in signIn => ", customerEmail)
+                localStorage.setItem('customerEmail', customerEmail);
                 navigate.push("/")
             }
             else if (result.status === 201) {

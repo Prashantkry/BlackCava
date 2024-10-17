@@ -3,7 +3,7 @@ import { FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import Image from 'next/image';
 import { FaStar } from 'react-icons/fa';
 import { useState } from 'react';
-import { Testimonial } from '@/app/Modals/modal';
+import { Testimonial } from '@/app/Models/interface';
 // import userDummyImage from '@/assets/userDummyImage.webp'
 
 

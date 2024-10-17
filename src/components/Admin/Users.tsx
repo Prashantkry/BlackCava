@@ -1,7 +1,7 @@
 // src/components/Users.tsx
 "use client";
 import Image from 'next/image';
-import { user } from '@/app/Modals/modal'; // Ensure this has the correct type definition for a user
+import { user } from '@/app/Models/interface'; // Ensure this has the correct type definition for a user
 // import userDummyImage from '@/assets/userDummyImage.webp';
 import React, { useState, useEffect } from 'react';
 
@@ -12,11 +12,12 @@ const Users = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await fetch("http://localhost:3000/api/users/allUsers");
+        // const response = await fetch("http://localhost:3000/api/users/allUsers");
+        const response = await fetch("/api/users/allUsers");
         const data = await response.json();
         console.log("Raw response user data:", data);
         if (data.success) {
-          setUsers(data.data);
+          setUsers(data.users);
         } else {
           console.error("Failed to fetch users:", data.message);
         }
@@ -50,9 +51,11 @@ const Users = () => {
                   <td className="border p-2 text-center">{index + 1}</td>
                   <td className="border p-2 text-center">
                     <Image
-                      src={user.profile || ''}
+                      src={user.profilePic || ''}
                       alt="Profile"
-                      className="h-10 w-10 rounded-full mx-auto"
+                      className="rounded-full mx-auto"
+                      width={40}
+                      height={40}
                     />
                   </td>
                   <td className="border p-2 text-center">{user.name || "no name"}</td>

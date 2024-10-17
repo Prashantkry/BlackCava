@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import ConfirmationModal from '../ConfirmationModal';
-import { Coffee } from '@/app/Modals/modal';
-const API_URL = "http://localhost:3000/api/products/getProducts";
+import { Coffee } from '@/app/Models/interface';
+// const API_URL = "http://localhost:3000/api/products/getProducts";
+const API_URL = "/api/products/getProducts";
 
 const AdminProductTable = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,7 +26,7 @@ const AdminProductTable = () => {
                     },
                 });
                 const data = await response.json();
-                console.log("Raw response data:", data);
+                // console.log("Raw response data:", data);
 
                 if (data.success) {
                     setProducts(data.data);
@@ -49,7 +50,8 @@ const AdminProductTable = () => {
 
     const confirmDelete = async () => {
         console.log('Deleting product with id:', selectedProduct);
-        const deleteProduct = await fetch(`http://localhost:3000/api/products/DeleteProduct?id=${selectedProduct}`, {
+        // const deleteProduct = await fetch(`http://localhost:3000/api/products/DeleteProduct?id=${selectedProduct}`, {
+        const deleteProduct = await fetch(`/api/products/DeleteProduct?id=${selectedProduct}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
@@ -76,8 +78,22 @@ const AdminProductTable = () => {
     };
 
     const handleEditChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
         if (editProduct) {
-            setEditProduct({ ...editProduct, [e.target.name]: e.target.value });
+            if (['small', 'medium', 'large'].includes(name)) {
+                setEditProduct({
+                    ...editProduct,
+                    sizes: {
+                        ...editProduct.sizes,
+                        [name]: value,
+                    },
+                });
+            } else {
+                setEditProduct({
+                    ...editProduct,
+                    [name]: value,
+                });
+            }
         }
     };
 
@@ -115,61 +131,64 @@ const AdminProductTable = () => {
     return (
         <div className="p-6 bg-white rounded-lg shadow-lg">
             <div className="flex justify-between items-center mb-6">
-                <h1 className="text-xl font-semibold">All Products</h1>
+                <h1 className="lg:text-xl text-sm font-semibold">All Products</h1>
                 <Link href="/Admin?section=AddNewProduct">
-                    <button className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600">
+                    <button className="bg-blue-500 text-white lg:text-xl text-sm py-2 px-4 rounded hover:bg-blue-600">
                         Add New Product
                     </button>
                 </Link>
             </div>
 
-            <table className="min-w-full table-auto">
-                <thead>
-                    <tr>
-                        <th className="p-2 border-b">Sr. No.</th>
-                        <th className="p-2 border-b">Name</th>
-                        <th className="p-2 border-b">Category</th>
-                        <th className="p-2 border-b" colSpan={3}>Prices</th>
-                        <th className="p-2 border-b">Edit</th>
-                        <th className="p-2 border-b">Delete</th>
-                    </tr>
-                    <tr>
-                        <th colSpan={3} />
-                        <th>Small</th>
-                        <th>Medium</th>
-                        <th>Large</th>
-                        <th colSpan={2} />
-                    </tr>
-                </thead>
-                <tbody>
-                    {products.length && products.map((product, index) => (
-                        <tr key={product.productId} className="border-b">
-                            <td className="py-2 px-4">{index + 1}</td>
-                            <td className="py-2 px-4">{product.name}</td>
-                            <td className="py-2 px-4">{product.category}</td>
-                            <td className="py-2 px-4">{product.small}</td>
-                            <td className="py-2 px-4">{product.medium}</td>
-                            <td className="py-2 px-4">{product.large}</td>
-                            <td className="py-2 px-4">
-                                <button
-                                    className="bg-yellow-500 text-white py-1 px-2 rounded hover:bg-yellow-600"
-                                    onClick={() => handleEdit(product)}
-                                >
-                                    Edit
-                                </button>
-                            </td>
-                            <td className="py-2 px-4">
-                                <button
-                                    className="bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600"
-                                    onClick={() => handleDelete(product.productId)}
-                                >
-                                    Delete
-                                </button>
-                            </td>
+            <div className='overflow-x-auto'>
+                <table className="min-w-full table-auto">
+                    <thead>
+                        <tr>
+                            <th className="p-2 border-b">Sr. No.</th>
+                            <th className="p-2 border-b">Name</th>
+                            <th className="p-2 border-b">Category</th>
+                            <th className="p-2 border-b" colSpan={3}>Prices</th>
+                            <th className="p-2 border-b">Edit</th>
+                            <th className="p-2 border-b">Delete</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                        <tr>
+                            <th colSpan={3} />
+                            <th>Small</th>
+                            <th>Medium</th>
+                            <th>Large</th>
+                            <th colSpan={2} />
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {products.length && products.map((product, index) => (
+                            <tr key={product.productId} className="border-b">
+                                <td className="py-2 px-4">{index + 1}</td>
+                                <td className="py-2 px-4">{product.name}</td>
+                                <td className="py-2 px-4">{product.category}</td>
+                                <td className="py-2 px-4">&#8377; {product.sizes.small}</td>
+                                <td className="py-2 px-4">&#8377; {product.sizes.medium}</td>
+                                <td className="py-2 px-4">&#8377; {product.sizes.large}</td>
+                                <td className="py-2 px-4">
+                                    <button
+                                        className="bg-yellow-500 text-white py-1 px-2 rounded hover:bg-yellow-600"
+                                        onClick={() => handleEdit(product)}
+                                    >
+                                        Edit
+                                    </button>
+                                </td>
+                                <td className="py-2 px-4">
+                                    <button
+                                        className="bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600"
+                                        onClick={() => handleDelete(product.productId)}
+                                    >
+                                        Delete
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
 
             {/* Modal for delete confirmation */}
             <ConfirmationModal
@@ -213,7 +232,7 @@ const AdminProductTable = () => {
                             type="number"
                             name="small"
                             placeholder="Small Price"
-                            value={editProduct.small}
+                            value={editProduct.sizes.small}
                             onChange={handleEditChange}
                             className="mb-2 p-2 border rounded w-full"
                         />
@@ -221,7 +240,7 @@ const AdminProductTable = () => {
                             type="number"
                             name="medium"
                             placeholder="Medium Price"
-                            value={editProduct.medium}
+                            value={editProduct.sizes.medium}
                             onChange={handleEditChange}
                             className="mb-2 p-2 border rounded w-full"
                         />
@@ -229,7 +248,7 @@ const AdminProductTable = () => {
                             type="number"
                             name="large"
                             placeholder="Large Price"
-                            value={editProduct.large}
+                            value={editProduct.sizes.large}
                             onChange={handleEditChange}
                             className="mb-2 p-2 border rounded w-full"
                         />

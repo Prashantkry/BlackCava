@@ -1,5 +1,5 @@
 import { useForm, Controller } from 'react-hook-form';
-import { Coffee } from '@/app/Modals/modal'; // Adjust path according to your folder structure
+import { Coffee } from '@/app/Models/interface'; 
 
 export const useCoffeeForm = (defaultValues?: Coffee) => {
   const {
@@ -16,9 +16,11 @@ export const useCoffeeForm = (defaultValues?: Coffee) => {
       description: '',
       category: '',
       flavour: '',
-      small: 0,
-      medium: 0,
-      large: 0,
+      sizes: {
+        small: 0,
+        medium: 0,
+        large: 0,
+      }
     },
   });
 

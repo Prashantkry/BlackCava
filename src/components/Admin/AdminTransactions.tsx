@@ -1,6 +1,6 @@
 // src/components/Transactions.tsx
 import React from 'react';
-import { Transaction } from '@/app/Modals/modal';
+import { Transaction } from '@/app/Models/interface';
 import TransactionTable from './TransactionTable';
 
 const transactions: Transaction[] = [

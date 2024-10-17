@@ -5,18 +5,19 @@ import QRCode from "qrcode";
 import Link from "next/link";
 import { RootState } from "@/app/Redux/store";
 import CartCoffeeCard from "../../components/CartCoffeeCard";
-import { Coffee, cartCoffeeItem } from "@/app/Modals/modal";
+import { Coffee, cartCoffeeItem } from "@/app/Models/interface";
 import { useState, useEffect } from "react";
 import { addToCart, CartItem } from '../Redux/cartSlice';
 
-const API_URL = "http://localhost:3000/api/products/cartItem";
-const API_URL_P = "http://localhost:3000/api/products/getProducts";
-const API_URL_C = "http://localhost:3000/api/payment";
+// const API_URL = "http://localhost:3000/api/products/cartItem";
+// const API_URL_P = "http://localhost:3000/api/products/getProducts";
+// const API_URL_C = "http://localhost:3000/api/payment";
+const API_URL = "/api/products/cartItem";
+const API_URL_P = "/api/products/getProducts";
+const API_URL_C = "/api/payment";
 
 const Page = () => {
   const dispatch = useDispatch();
-  const cart = useSelector((state: RootState) => state.cart.cart);
-  const [products, setProducts] = useState<Coffee[]>([]);
   const [cartProducts, setCartProducts] = useState<Coffee[]>([]);
   const [isProccedToBuy, setProccedToBuy] = useState<boolean>(false);
   const [cartItems, setCartItems] = useState<cartCoffeeItem[]>([]);
@@ -71,10 +72,8 @@ const Page = () => {
       };
 
       const productData = await fetchProducts();
-      setProducts(productData);
       const cartData = await fetchCart();
       setCartProducts(cartData);
-      // console.log("productData => ", productData, "cartData => ", cartData)
 
       const coffeesInCart: Coffee[] = [];
       const coffeesForBill: cartCoffeeItem[] = [];
@@ -85,8 +84,8 @@ const Page = () => {
         );
         // console.log("matchingCoffee => ", matchingCoffee)
         if (matchingCoffee) {
-          if (customerId) {
-            dispatch(addToCart({ ...item, userId: customerId }));
+          if (customerEmail) {
+            dispatch(addToCart({ ...item, customerEmail }));
           } else {
             console.error("Customer ID is null");
           }
@@ -99,7 +98,7 @@ const Page = () => {
             name: matchingCoffee.name,
             size: matchingSize,
             quantity: item.quantity,
-            pricePerQuantity: Number(matchingCoffee[matchingSize.toLowerCase()]),
+            pricePerQuantity: Number(matchingCoffee.sizes[matchingSize.toLowerCase()]),
           });
         }
       });
@@ -116,7 +115,7 @@ const Page = () => {
 
   const publicKey =
     "pk_test_51OUipuSD6rEtgA3HR4Yb5I0b10ADtBgl6owKQJmZLFxQiBkdVKPUvGQiJcizlvyXgU3QnsThHOpYDSaEDzWKOsfE00YXM24aQr";
-  const customerId = localStorage.getItem("customerId");
+  const customerEmail = localStorage.getItem("customerEmail");
   const checkoutPlan = async () => {
     const pay = await fetch(`${API_URL_C}`, {
       method: "post",
@@ -125,7 +124,7 @@ const Page = () => {
       },
       body: JSON.stringify({
         cartItems,
-        customerId,
+        customerEmail,
       }),
     });
     const paymentDetails = await pay.json();
@@ -190,8 +189,8 @@ const Page = () => {
               >
                 <span>{item.name}</span>
                 <span>{item.size}</span>
-                <span>{item.pricePerQuantity}</span>
-                <span>{item.quantity}</span>
+                <span>{Number(item.pricePerQuantity)}</span>
+                <span>{Number(item.quantity)}</span>
                 <span>
                   {Number(item.pricePerQuantity) * Number(item.quantity)}
                 </span>

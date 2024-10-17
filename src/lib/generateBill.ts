@@ -1,4 +1,4 @@
-import { Transaction } from "@/app/Modals/modal";
+import { Transaction } from "@/app/Models/interface";
 import html2canvas from "html2canvas";
 import { jsPDF } from 'jspdf';
 import { coffee0 } from '@/assets/Media';

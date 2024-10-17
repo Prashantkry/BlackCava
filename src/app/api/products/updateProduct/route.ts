@@ -1,14 +1,14 @@
+import { MongoClient } from 'mongodb';
 import { NextResponse } from 'next/server';
-import connection from '@/utils/db';
-import { ResultSetHeader } from 'mysql2';
 
-// Named export for PUT method
+const mongoUrl = process.env.NEXT_PUBLIC_MongoDB!;
+
 export async function PUT(req: Request) {
   try {
     const body = await req.json();
     const { productId, name, category, flavour, description, small, medium, large } = body;
+    console.log("product data -> ", productId, name, category, flavour, description, small, medium, large);
 
-    // Validate input fields
     if (!productId || !name || !category || !flavour || !description || !small || !medium || !large) {
       return NextResponse.json(
         { success: false, message: 'All fields are required' },
@@ -16,24 +16,48 @@ export async function PUT(req: Request) {
       );
     }
 
-    // Update product in the database
-    const [result] = await connection.execute<ResultSetHeader>(
-      'UPDATE allProducts SET name = ?, category = ?, flavour = ?, description = ?, small = ?, medium = ?, large = ? WHERE productId = ?',
-      [name, category, flavour, description, small, medium, large, productId]
-    );
+    let client: MongoClient | null = null;
 
-    // Check if any rows were affected (i.e., if the product was updated)
-    if (result.affectedRows === 0) {
-      return NextResponse.json(
-        { success: false, message: 'Product not found' },
-        { status: 404 }
+    try {
+      client = await MongoClient.connect(mongoUrl);
+      const db = client.db("blackCava");
+      const collection = db.collection("allProduct");
+
+      const result = await collection.updateOne(
+        { productId },
+        {
+          $set: {
+            name,
+            category,
+            flavour,
+            description,
+            sizes: { small, medium, large }
+          }
+        }
       );
-    }
 
-    return NextResponse.json(
-      { success: true, message: 'Product updated successfully' },
-      { status: 200 }
-    );
+      if (result.matchedCount === 0) {
+        return NextResponse.json(
+          { success: false, message: 'Product not found' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(
+        { success: true, message: 'Product updated successfully' },
+        { status: 200 }
+      );
+    } catch (error) {
+      console.error('Database operation failed:', error);
+      return NextResponse.json(
+        { success: false, message: 'Internal server error' },
+        { status: 500 }
+      );
+    } finally {
+      if (client) {
+        await client.close();
+      }
+    }
   } catch (error) {
     console.error('Error updating product:', error);
     return NextResponse.json(

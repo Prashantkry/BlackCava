@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { FaHeart, FaShoppingCart } from "react-icons/fa";
 // import coffeeDummyImage from "@/assets/coffeeDummyImage.webp";
 // import { testimonialData, faqData } from "../../../assets/dummyData";
-import { Coffee, FAQItem, Testimonial } from "../../Modals/modal";
+import { Coffee, FAQItem, Testimonial } from "../../Models/interface";
 import { removeFromCart, addToCart } from "@/app/Redux/cartSlice";
 import { toggleWishlist } from "@/app/Redux/wishlistSlice";
 import Image from "next/image";
@@ -15,7 +15,8 @@ import TestimonialCarousel from "@/components/TestimonialCarousel";
 import FAQ from "@/components/FAQ";
 import { toast } from "react-toastify";
 
-const API_URL = "http://localhost:3000/api/products/getProducts";
+// const API_URL = "http://localhost:3000/api/products/getProducts";
+const API_URL = "/api/products/getProducts";
 
 const ProductDetailsPage: React.FC = () => {
   const { id } = useParams();
@@ -31,7 +32,11 @@ const ProductDetailsPage: React.FC = () => {
   const [quantity, setQuantity] = useState<number>(1);
   const [showQuantityInput, setShowQuantityInput] = useState(false);
   const isInWishlist = wishlist.some((item) => item === coffee?.productId);
-  const userId = localStorage.getItem("customerId")!;
+
+  let customerEmail: string | null = null;
+  if (typeof window !== 'undefined') {
+    customerEmail = localStorage.getItem("customerEmail");
+  }
   // const cartItem = cart.find((item) => item.productId === coffee?.id && item.size === selectedSize);
 
   const waitFn = async () => {
@@ -88,7 +93,7 @@ const ProductDetailsPage: React.FC = () => {
         productId: coffee!.productId,
         size: selectedSize,
         quantity: 0,
-        userId: userId,
+        customerEmail: customerEmail || "",
       })
     );
     if (quantity === 0) {
@@ -102,7 +107,7 @@ const ProductDetailsPage: React.FC = () => {
           productId: coffee!.productId,
           size: selectedSize,
           quantity: quantity,
-          userId: userId,
+          customerEmail: customerEmail || "",
         })
       );
       toast.success(
@@ -154,7 +159,7 @@ const ProductDetailsPage: React.FC = () => {
                         }`}
                       onClick={() => setSelectedSize("small")}
                     >
-                      Small - ${coffee.small}
+                      Small - ${coffee.sizes["small"]}
                     </button>
                     <button
                       className={`px-4 py-2 rounded-md ${selectedSize === "medium"
@@ -163,7 +168,7 @@ const ProductDetailsPage: React.FC = () => {
                         }`}
                       onClick={() => setSelectedSize("medium")}
                     >
-                      Medium - ${coffee.medium}
+                      Medium - ${coffee.sizes["medium"]}
                     </button>
                     <button
                       className={`px-4 py-2 rounded-md ${selectedSize === "large"
@@ -172,7 +177,7 @@ const ProductDetailsPage: React.FC = () => {
                         }`}
                       onClick={() => setSelectedSize("large")}
                     >
-                      Large - ${coffee.large}
+                      Large - ${coffee.sizes["large"]}
                     </button>
                   </div>
                 </div>

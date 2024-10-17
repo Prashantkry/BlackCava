@@ -15,21 +15,30 @@ const CustomNavbar = () => {
     const pathname = usePathname();
     const router = useRouter();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
-    // useEffect(() => {
-    //     const token = localStorage.getItem('customerId');
-    //     token ? setIsAuthenticated(true) : setIsAuthenticated(false);
-    // }, []);
     useEffect(() => {
         const handleStorageChange = () => {
-          const token = localStorage.getItem('customerId');
-          token ? setIsAuthenticated(true) : setIsAuthenticated(false);
+            // const token = localStorage.getItem('customerEmail');
+
+
+            let customerEmail: string | null = null;
+            let token: string | null = null;
+
+            if (typeof window !== 'undefined') {
+                customerEmail = localStorage.getItem("customerEmail");
+                token = localStorage.getItem('token');
+            }
+
+
+
+
+            token ? setIsAuthenticated(true) : setIsAuthenticated(false);
         };
-        handleStorageChange(); 
+        handleStorageChange();
         window.addEventListener('storage', handleStorageChange);
         return () => {
-          window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('storage', handleStorageChange);
         };
-      }, []);
+    }, []);
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
@@ -40,12 +49,15 @@ const CustomNavbar = () => {
         if (isAuthenticated) {
             router.push(path);
         } else {
-            router.push('/Auth'); 
+            router.push('/Auth');
         }
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('customerId');
+        // localStorage.removeItem('customerEmail');
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('customerEmail');
+        }
         setIsAuthenticated(false);
         router.push('/');
     };
@@ -77,7 +89,7 @@ const CustomNavbar = () => {
                             About
                             {isActive('/AboutPage') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
                         </Link>
-                        {isAuthenticated && (<span className={`relative transition duration-300 ${isActive('/Auth') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}onClick={handleLogout} >
+                        {isAuthenticated && (<span className={`relative transition duration-300 ${isActive('/Auth') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`} onClick={handleLogout} >
                             Logout
                             {isActive('/Auth') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
                         </span>)}

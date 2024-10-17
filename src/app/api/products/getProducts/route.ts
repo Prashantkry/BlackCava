@@ -1,13 +1,27 @@
+import { MongoClient } from 'mongodb';
 import { NextRequest, NextResponse } from 'next/server';
-import connection from '@/utils/db'; 
 
-// ! Get all products
+const mongoUrl = process.env.NEXT_PUBLIC_MongoDB!;
+const dbName = "blackCava"; 
+const collectionName = "allProduct";
+
 export async function GET(req: NextRequest) {
+    let client: MongoClient | null = null;
+
     try {
-      const [rows] = await connection.query('SELECT * FROM allProducts where isDeleted = FALSE');
-      return NextResponse.json({ success: true, data: rows });
+        client = await MongoClient.connect(mongoUrl);
+        const db = client.db(dbName);
+        const collection = db.collection(collectionName);
+
+        const products = await collection.find({}).toArray();
+        return NextResponse.json({ success: true, data: products });
     } catch (error) {
-      console.error(error);
-      return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+        console.error(error);
+
+        return NextResponse.json({ success: false, message: 'Internal server error' }, { status: 500 });
+    } finally {
+        if (client) {
+            await client.close();
+        }
     }
-  }
+}
