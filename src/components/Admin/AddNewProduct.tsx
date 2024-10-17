@@ -193,7 +193,7 @@ const AddNewProduct: React.FC = () => {
                 min={0}
                 placeholder="Small Size Price"
                 className="w-full p-2 border rounded-md"
-                value={typeof field.value === 'number' ? field.value : ''}
+                value={field.value || ''}
                 onChange={(e) => {
                   field.onChange(e);
                 }}
@@ -217,7 +217,7 @@ const AddNewProduct: React.FC = () => {
                 min={0}
                 placeholder="Medium Size Price"
                 className="w-full p-2 border rounded-md"
-                value={typeof field.value === 'number' ? field.value : ''}
+                value={field.value || ''}
                 onChange={(e) => {
                   field.onChange(e);
                 }}
@@ -241,7 +241,7 @@ const AddNewProduct: React.FC = () => {
                 min={0}
                 placeholder="Large Size Price"
                 className="w-full p-2 border rounded-md"
-                value={typeof field.value === 'number' ? field.value : ''}
+                value={field.value || ''}
                 onChange={(e) => {
                   field.onChange(e);
                 }}
