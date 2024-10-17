@@ -37,7 +37,7 @@ const AddNewProduct: React.FC = () => {
 
     console.log(data);
     try {
-      const response = await fetch('/api/products/AddProduct', {
+      const response = await fetch('http://localhost:3000/api/products/AddProduct', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
