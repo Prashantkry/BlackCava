@@ -21,8 +21,8 @@ const AddNewProduct: React.FC = () => {
       const reader = new FileReader();
       reader.onload = () => {
         const base64String = reader.result as string;
-        setImagePreview(base64String); 
-        setValue('image', base64String); 
+        setImagePreview(base64String);
+        setValue('image', base64String);
       };
       reader.readAsDataURL(file);
     }
@@ -181,24 +181,24 @@ const AddNewProduct: React.FC = () => {
             name='small'
             control={control}
             rules={{
-              required: `small Size Price is required`,
+              required: `Small Size Price is required`,
               min: {
                 value: 0,
-                message: `small Size Price must be a positive number`,
+                message: `Small Size Price must be a positive number`,
               },
             }}
             render={({ field }) => (
               <input
-                type="number" min={0}
-                placeholder={`small Size Price`}
+                type="number"
+                min={0}
+                placeholder="Small Size Price"
                 className="w-full p-2 border rounded-md"
-                value={field.value != null ? field.value : ''}
-                onChange={(e) => {
-                  field.onChange(e);
-                }}
+                value={field.value ?? ''}  // Use `field.value ?? ''` to handle undefined or null values
+                onChange={(e) => field.onChange(e.target.valueAsNumber)}  // Use `valueAsNumber` to properly handle numeric input
               />
             )}
           />
+
           <Controller
             name='medium'
             control={control}
@@ -211,38 +211,38 @@ const AddNewProduct: React.FC = () => {
             }}
             render={({ field }) => (
               <input
-                type="number" min={0}
-                placeholder={`medium Size Price`}
+                type="number"
+                min={0}
+                placeholder="Medium Size Price"
                 className="w-full p-2 border rounded-md"
-                value={field.value !== null ? field.value : ''}
-                onChange={(e) => {
-                  field.onChange(e);
-                }}
+                value={field.value ?? ''}
+                onChange={(e) => field.onChange(e.target.valueAsNumber)}
               />
             )}
           />
+
           <Controller
             name='large'
             control={control}
             rules={{
-              required: `large Size Price is required`,
+              required: `Large Size Price is required`,
               min: {
                 value: 0,
-                message: `large Size Price must be a positive number`,
+                message: `Large Size Price must be a positive number`,
               },
             }}
             render={({ field }) => (
               <input
-                type="number" min={0}
-                placeholder={`large Size Price`}
+                type="number"
+                min={0}
+                placeholder="Large Size Price"
                 className="w-full p-2 border rounded-md"
-                value={field.value !== null ? field.value : ''}
-                onChange={(e) => {
-                  field.onChange(e);
-                }}
+                value={field.value ?? ''}
+                onChange={(e) => field.onChange(e.target.valueAsNumber)}
               />
             )}
           />
+
 
           {/* Flavour and Features */}
           <div className="w-full md:w-1/2 space-y-4">
