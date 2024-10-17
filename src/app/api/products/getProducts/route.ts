@@ -14,7 +14,10 @@ export async function GET(req: NextRequest) {
         const collection = db.collection(collectionName);
 
         const products = await collection.find({}).toArray();
-        return NextResponse.json({ success: true, data: products });
+        // return NextResponse.json({ success: true, data: products });
+        const response = NextResponse.json({ success: true, data: products });
+        response.headers.set('Cache-Control', 'no-store'); 
+        return response;
     } catch (error) {
         console.error(error);
 
