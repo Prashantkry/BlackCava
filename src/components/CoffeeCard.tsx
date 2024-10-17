@@ -140,7 +140,7 @@ const CoffeeCard: React.FC<CoffeeCardProps> = ({ product }) => {
 
       <div className="mb-4">
         <span className="text-yellow-500 font-bold">
-          Price: ${product.sizes[selectedSize]!}
+          Price: &#8377; {product.sizes[selectedSize]!}
         </span>
         <div className="flex mt-2 sm:mb-0">
           <button
