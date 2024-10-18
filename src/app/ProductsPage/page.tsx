@@ -22,7 +22,7 @@ const ProductsPage = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [isLoading, setIsLoading] = useState(true);
 
-    const itemsPerPage = 10;
+    const itemsPerPage = 12;
 
     useEffect(() => {
         setIsLoading(true);
@@ -124,7 +124,7 @@ const ProductsPage = () => {
 
                     {/* Coffee Products Grid */}
                     {isLoading ? (
-                        <SkeletonTheme baseColor="#2a2a2a" highlightColor="#444">
+                        <SkeletonTheme baseColor="#000000" highlightColor="#111111">
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-12">
                                 {Array.from({ length: 8 }).map((_, index) => (
                                     <div key={index}>

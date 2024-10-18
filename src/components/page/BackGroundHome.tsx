@@ -4,6 +4,9 @@ import Image from "next/image";
 import { shop4 } from "@/assets/Media";
 
 export function BackGroundHome() {
+    const handleHome = () => {
+        window.location.href = '/ProductsPage';
+    }
     return (
         <section className="relative flex items-center justify-center min-h-screen bg-black overflow-hidden">
             {/* Background Image */}
@@ -22,7 +25,7 @@ export function BackGroundHome() {
                 <p className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-gray-300 mb-6 sm:mb-8 md:mb-10 lg:mb-12 leading-relaxed mx-4 sm:mx-6 md:mx-8 lg:mx-12 max-w-4xl">
                     Immerse yourself in a coffee experience where every sip tells a story. From sourcing the finest beans to expert roasting, we bring you unparalleled quality.
                 </p>
-                <button className="px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 bg-yellow-500 text-black font-semibold rounded-full shadow-lg hover:bg-yellow-400 hover:shadow-xl transition-transform transform hover:scale-105 duration-300 focus:outline-none focus:ring-4 focus:ring-yellow-300">
+                <button onClick={handleHome} className="px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 bg-yellow-500 text-black font-semibold rounded-full shadow-lg hover:bg-yellow-400 hover:shadow-xl transition-transform transform hover:scale-105 duration-300 focus:outline-none focus:ring-4 focus:ring-yellow-300">
                     Explore Now
                 </button>
             </div>
