@@ -109,7 +109,7 @@ const ProductsPage = () => {
 
                     {/* Coffee Categories */}
                     <div className="flex flex-wrap  justify-center gap-4 mb-12 w-full md:w-fit">
-                        {['All', 'Espresso-Based Coffees', 'Milk-Based Coffees', 'Specialty Coffees', 'Iced Coffee'].map((category) => (
+                        {['All', 'Espresso-Based Coffees', 'Milk-Based Coffees', 'Specialty Coffees', 'Cold Coffees'].map((category) => (
                             <motion.button
                                 key={category}
                                 className={`py-2 px-4 md:py-3 md:px-6 w-full md:w-fit rounded-lg text-base md:text-xl font-semibold transition-transform ${selectedCategory === category ? 'bg-yellow-500 text-gray-900 transform scale-110 shadow-lg' : 'bg-gray-700 hover:bg-gray-600'}`}
