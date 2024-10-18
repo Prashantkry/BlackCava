@@ -5,6 +5,8 @@ import { useSearchParams } from 'next/navigation'
 import { Coffee } from '../Models/interface';
 import CoffeeCard from '@/components/CoffeeCard';
 import Loading from '../loading';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
+import 'react-loading-skeleton/dist/skeleton.css';
 
 // const API_URL = 'https://api.sampleapis.com/coffee/hot';
 // const API_URL = 'http://localhost:3000/api/products/getProducts';
@@ -18,9 +20,12 @@ const ProductsPage = () => {
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [currentPage, setCurrentPage] = useState(1);
+    const [isLoading, setIsLoading] = useState(true);
+
     const itemsPerPage = 10;
 
     useEffect(() => {
+        setIsLoading(true);
         const fetchProducts = async () => {
             try {
                 const response = await fetch(API_URL, {
@@ -40,6 +45,8 @@ const ProductsPage = () => {
                 }
             } catch (error) {
                 console.error('Error fetching products:', error);
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchProducts();
@@ -76,7 +83,7 @@ const ProductsPage = () => {
     const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 
     return (
-        <Suspense fallback={<Loading/>}>
+        <Suspense fallback={<Loading />}>
             <div className="min-h-screen bg-gray-900 text-white py-16 px-4">
                 <div className="container mx-auto">
                     {/* Page Title */}
@@ -101,11 +108,11 @@ const ProductsPage = () => {
                     </div>
 
                     {/* Coffee Categories */}
-                    <div className="flex flex-wrap justify-center gap-4 mb-12">
-                        {['All', 'Espresso', 'Cappuccino', 'Mocha', 'Iced Coffee'].map((category) => (
+                    <div className="flex flex-wrap  justify-center gap-4 mb-12 w-full md:w-fit">
+                        {['All', 'Espresso-Based Coffees', 'Milk-Based Coffees', 'Specialty Coffees', 'Iced Coffee'].map((category) => (
                             <motion.button
                                 key={category}
-                                className={`py-2 px-4 md:py-3 md:px-6 rounded-lg text-base md:text-xl font-semibold transition-transform ${selectedCategory === category ? 'bg-yellow-500 text-gray-900 transform scale-110 shadow-lg' : 'bg-gray-700 hover:bg-gray-600'}`}
+                                className={`py-2 px-4 md:py-3 md:px-6 w-full md:w-fit rounded-lg text-base md:text-xl font-semibold transition-transform ${selectedCategory === category ? 'bg-yellow-500 text-gray-900 transform scale-110 shadow-lg' : 'bg-gray-700 hover:bg-gray-600'}`}
                                 onClick={() => filterByCategory(category)}
                                 whileHover={{ scale: 1.1, rotate: 5 }}
                                 whileTap={{ scale: 0.9 }}
@@ -116,11 +123,24 @@ const ProductsPage = () => {
                     </div>
 
                     {/* Coffee Products Grid */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-12">
-                        {currentProducts.map((product) => (
-                            <CoffeeCard key={product.productId} product={product} />
-                        ))}
-                    </div>
+                    {isLoading ? (
+                        <SkeletonTheme baseColor="#2a2a2a" highlightColor="#444">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-12">
+                                {Array.from({ length: 8 }).map((_, index) => (
+                                    <div key={index}>
+                                        <Skeleton height={200} />
+                                        <Skeleton count={2} style={{ marginTop: '10px' }} />
+                                    </div>
+                                ))}
+                            </div>
+                        </SkeletonTheme>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-12">
+                            {currentProducts.map((product) => (
+                                <CoffeeCard key={product.productId} product={product} />
+                            ))}
+                        </div>
+                    )}
 
                     {/* Pagination Controls */}
                     <div className="flex justify-between items-center mt-8">
