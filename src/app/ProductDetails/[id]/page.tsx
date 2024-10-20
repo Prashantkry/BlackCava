@@ -16,7 +16,7 @@ import FAQ from "@/components/FAQ";
 import { toast } from "react-toastify";
 
 // const API_URL = "http://localhost:3000/api/products/getProducts";
-const API_URL = "/api/products/getProducts";
+const API_URL = "/api/products/getOneProduct";
 
 const ProductDetailsPage: React.FC = () => {
   const { id } = useParams();
@@ -42,17 +42,17 @@ const ProductDetailsPage: React.FC = () => {
   const waitFn = async () => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(API_URL, {
+        const response = await fetch(`${API_URL}?id=${id}`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
           },
         });
         const data = await response.json();
-        console.log("Raw response data:", data);
+        // console.log("Raw response data:", data);
 
         if ((data.success = true)) {
-          setProducts(data.data);
+          setCoffee(data.product);
         } else {
           console.error("Failed to fetch products:", data.message);
         }
@@ -135,10 +135,11 @@ const ProductDetailsPage: React.FC = () => {
             <div className="flex flex-col h-[60vh] sm:gap-4 md:flex-row gap-8">
               <div className="w-full md:w-1/2">
                 <Image
-                  src=""
+                  src={coffee.image}
                   className="rounded-2xl h-full"
                   alt={coffee.name}
-                  objectFit="cover"
+                  width={500}
+                  height={300}
                 />
               </div>
               <div className="w-full md:w-1/2">
