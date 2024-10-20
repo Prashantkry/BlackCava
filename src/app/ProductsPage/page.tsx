@@ -124,12 +124,23 @@ const ProductsPage = () => {
 
                     {/* Coffee Products Grid */}
                     {isLoading ? (
-                        <SkeletonTheme baseColor="#000000" highlightColor="#111111">
+                        <SkeletonTheme baseColor="#1f2937" highlightColor="#E5E7EB">
                             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 md:gap-12">
                                 {Array.from({ length: 8 }).map((_, index) => (
-                                    <div key={index}>
+                                    <div key={index} className="bg-gray-800 rounded-2xl overflow-hidden shadow-xl p-4">
                                         <Skeleton height={200} />
-                                        <Skeleton count={2} style={{ marginTop: '10px' }} />
+                                        <Skeleton height={30} style={{ marginTop: '10px' }} />
+                                        <Skeleton height={40} style={{ marginTop: '10px' }} />
+                                        <Skeleton height={30} style={{ marginTop: '10px' }} />
+                                        <div className="flex gap-2 px-3 mt-2 justify-between">
+                                            <Skeleton height={40} width={60}/>
+                                            <Skeleton height={40} width={60}/>
+                                            <Skeleton height={40} width={60}/>
+                                        </div>
+                                        <div className="flex gap-2 justify-between">
+                                            <Skeleton width={30} height={30} style={{ marginTop: '10px' }} />
+                                            <Skeleton width={40} height={30} style={{ marginTop: '10px' }} />
+                                        </div>
                                     </div>
                                 ))}
                             </div>

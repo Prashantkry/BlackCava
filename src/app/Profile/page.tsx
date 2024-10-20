@@ -1,14 +1,15 @@
 'use client';
 import Image from 'next/image';
 import React, { useState, useEffect } from 'react';
-import useUserDetailsHook from '@/hooks/useUserDetailsHook';
 import { SubmitHandler } from 'react-hook-form';
-import usePasswordHook from '@/hooks/usePasswordHook';
 import { Coffee, cartCoffeeItem } from '../Models/interface';
 import { addToCart, CartItem, clearCart } from '../Redux/cartSlice';
 import { toast } from 'react-toastify';
-import Skeleton from 'react-loading-skeleton'; // Import Skeleton from the library
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton'; // Import Skeleton from the library
 import 'react-loading-skeleton/dist/skeleton.css';
+import { userDummyImage } from '@/assets/Media';
+import useUserDetailsHook from '@/hooks/useUserDetailsHook';
+import usePasswordHook from '@/hooks/usePasswordHook';
 
 interface orderCartData {
     name: string;
@@ -38,14 +39,15 @@ const Profile = () => {
     const [isChangePassword, setIsChangePassword] = useState(false);
     const [photo, setPhoto] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
-    const [backendPic, setBackendPic] = useState("")
+    const [backendPic, setBackendPic] = useState("");
+    const [isOrdersLoading, setIsOrdersLoading] = useState(true);
 
     let customerEmail: string | null = null;
 
     if (typeof window !== 'undefined') {
-      customerEmail = localStorage.getItem("customerEmail");
+        customerEmail = localStorage.getItem("customerEmail");
     }
-    
+
     useEffect(() => {
         const fetchUserDetails = async () => {
             const response = await fetch(`/api/users/oneUser?email=${customerEmail}`);
@@ -97,6 +99,7 @@ const Profile = () => {
             if (response.ok && result.success) {
                 setAllTransactions(result.orders);
                 console.log("ordersWithParsedItems => ", result.orders);
+                setIsOrdersLoading(false);
             } else {
                 console.error('Failed to fetch orders:', result.message);
             }
@@ -199,15 +202,7 @@ const Profile = () => {
                             loading ? (
                                 <Skeleton circle={true} height={128} width={128} />
                             ) : (
-                                photo ? (
-                                    <Image src={photo} alt="User Photo" width={128} height={128} className="rounded-full" />
-                                ) : (
-                                    <input
-                                        type="text" disabled={!isEditing}
-                                        {...registerUser('name')}
-                                        className={`border bg-gray-300 p-1 pl-2 md:p-2 rounded-lg ${userErrors.name ? 'border-red-500' : 'border-gray-300'}`}
-                                    />
-                                )
+                                <Image src={photo || userDummyImage} alt="User Photo" width={128} height={128} className="rounded-full" />
                             )
                         }
                         <input type="file" onChange={handlePhotoChange} className="hidden" id="photoInput" />
@@ -374,46 +369,59 @@ const Profile = () => {
                                 </tr>
                             </thead>
                             <tbody className="bg-gray-700">
-                                {allTransactions && allTransactions.length ? (
-                                    allTransactions.map((order) => (
-                                        <tr key={order.stripeSessionId} className="hover:bg-gray-600 transition-colors text-left duration-200">
-                                            <td
-                                                className="border-b border-gray-600 py-2 px-4 max-w-[2vw] overflow-hidden cursor-pointer"
-                                                onClick={() => handleCopyToClipboard(order.stripeSessionId)}
-                                                title="Click to copy Order ID"
-                                            >
-                                                {order.stripeSessionId.split('_').slice(0, 4).join('_') + (order.stripeSessionId.split('_').length > 4 ? '...' : '')}
-                                            </td>
-                                            <td className="border-b border-gray-600 py-2 px-4">
-                                                {new Date(order.createdAt).toLocaleString([], {
-                                                    year: 'numeric',
-                                                    month: '2-digit',
-                                                    day: '2-digit',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                    hour12: false
-                                                })}
-                                            </td>
-                                            <td className="border-b border-gray-600 py-2 px-4">
-                                                {order.cartItems?.name || 'N/A'}
-                                            </td>
-                                            <td className="border-b border-gray-600 py-2 px-4">
-                                                {order.cartItems?.quantity || 0}
-                                            </td>
-                                            <td className="border-b border-gray-600 py-2 px-4">
-                                                {order.cartItems?.size.charAt(0) || 'N/A'}
-                                            </td>
-                                            <td className="border-b border-gray-600 py-2 px-4">
-                                                &#8377; {order.cartItems?.pricePerQuantity * order.cartItems?.quantity || 0}
+                                {isOrdersLoading ? (
+                                    <SkeletonTheme baseColor="#1f2937" highlightColor="#E5E7EB">{
+                                        Array.from({ length: 3 }).map((_, index) => (
+                                            <tr key={index}>
+                                                <td className="border-b border-gray-600 py-2 px-4" colSpan={6}>
+                                                    <Skeleton height={20} />
+                                                </td>
+                                            </tr>
+                                        ))
+                                    }
+                                    </SkeletonTheme>
+                                ) : (
+                                    allTransactions && allTransactions.length ? (
+                                        allTransactions.map((order) => (
+                                            <tr key={order.stripeSessionId} className="hover:bg-gray-600 transition-colors text-left duration-200">
+                                                <td
+                                                    className="border-b border-gray-600 py-2 px-4 max-w-[2vw] overflow-hidden cursor-pointer"
+                                                    onClick={() => handleCopyToClipboard(order.stripeSessionId)}
+                                                    title="Click to copy Order ID"
+                                                >
+                                                    {order.stripeSessionId.split('_').slice(0, 4).join('_') + (order.stripeSessionId.split('_').length > 4 ? '...' : '')}
+                                                </td>
+                                                <td className="border-b border-gray-600 py-2 px-4">
+                                                    {new Date(order.createdAt).toLocaleString([], {
+                                                        year: 'numeric',
+                                                        month: '2-digit',
+                                                        day: '2-digit',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                        hour12: false
+                                                    })}
+                                                </td>
+                                                <td className="border-b border-gray-600 py-2 px-4">
+                                                    {order.cartItems?.name || 'N/A'}
+                                                </td>
+                                                <td className="border-b border-gray-600 py-2 px-4">
+                                                    {order.cartItems?.quantity || 0}
+                                                </td>
+                                                <td className="border-b border-gray-600 py-2 px-4">
+                                                    {/* {order.cartItems?.size.charAt(0) || 'N/A'} */}
+                                                </td>
+                                                <td className="border-b border-gray-600 py-2 px-4">
+                                                    &#8377; {order.cartItems?.pricePerQuantity * order.cartItems?.quantity || 0}
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={6} className="text-center py-4 text-yellow-500">
+                                                No orders available
                                             </td>
                                         </tr>
-                                    ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={6} className="text-center py-4 text-yellow-500">
-                                            No orders available
-                                        </td>
-                                    </tr>
+                                    )
                                 )}
                             </tbody>
                         </table>

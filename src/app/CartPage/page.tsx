@@ -8,6 +8,7 @@ import CartCoffeeCard from "../../components/CartCoffeeCard";
 import { Coffee, cartCoffeeItem } from "@/app/Models/interface";
 import { useState, useEffect } from "react";
 import { addToCart, CartItem } from '../Redux/cartSlice';
+import Skeleton, { SkeletonTheme } from 'react-loading-skeleton';
 
 // const API_URL = "http://localhost:3000/api/products/cartItem";
 // const API_URL_P = "http://localhost:3000/api/products/getProducts";
@@ -22,6 +23,7 @@ const Page = () => {
   const [isProccedToBuy, setProccedToBuy] = useState<boolean>(false);
   const [cartItems, setCartItems] = useState<cartCoffeeItem[]>([]);
   const [totalAmount, setTotalAmount] = useState(0);
+  const [isCartItemsLoading, setIsCartItemsLoading] = useState(true);
 
   useEffect(() => {
     const fetchAndProcessData = async () => {
@@ -109,6 +111,7 @@ const Page = () => {
         return sum + Number(item.quantity) * Number(item.pricePerQuantity);
       }, 0);
       setTotalAmount(total);
+      setIsCartItemsLoading(false);
     };
     fetchAndProcessData();
   }, []);
@@ -141,33 +144,64 @@ const Page = () => {
       <div className="container mx-auto p-6 grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 overflow-y-auto max-h-screen no-scrollbar">
           <h1 className="text-2xl font-bold mb-4 text-yellow-500">Your Cart</h1>
-          {/* {cart.length > 0 ? ( */}
-          {cartProducts ? (
-            <>
-              {/* {console.log("cartProducts => ", cartProducts)} */}
-              {cartProducts.map((coffee, index) => (
+          {isCartItemsLoading ? (
+            <SkeletonTheme baseColor="#1f2937" highlightColor="#E5E7EB">
+              <div className="grid grid-cols-1 gap-8 md:gap-12">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="flex gap-4 bg-gray-800 rounded-xl shadow-lg mb-6 w-full h-fit p-4 relative">
+                    <div className="w-full sm:w-1/3">
+                      <Skeleton
+                        className="h-full object-center rounded"
+                        width={250}
+                        height={200}
+                      />
+                    </div>
+                    <div className="w-full sm:w-2/3 h-[30vh]">
+                      <Skeleton height={30} width="50%" style={{ marginTop: '10px' }} />
+                      <Skeleton height={40} width="90%" style={{ marginTop: '6px' }} />
+                      <div className="flex gap-6 px-3 mt-2">
+                        <Skeleton height={40} width={40} />
+                        <Skeleton height={40} width={40} />
+                        <Skeleton height={40} width={40} />
+                      </div>
+                      <div className="flex gap-4 mt-3">
+                        <Skeleton height={40} width={40} />
+                        <Skeleton height={40} width={24} />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </SkeletonTheme>) : (<>
+              {cartProducts ? (
                 <>
-                  <CartCoffeeCard
-                    key={index}
-                    coffee={coffee as Coffee}
-                    item={cartItems[index] as cartCoffeeItem}
-                  />
+                  {/* {console.log("cartProducts => ", cartProducts)} */}
+                  {cartProducts.map((coffee, index) => (
+                    <>
+                      <CartCoffeeCard
+                        key={index}
+                        coffee={coffee as Coffee}
+                        item={cartItems[index] as cartCoffeeItem}
+                      />
+                    </>
+                  ))}
+                  <button className="w-full mt-6 px-4 py-2 bg-blue-600 text-gray-200 rounded hover:bg-blue-700">
+                    Add More Items
+                  </button>
                 </>
-              ))}
-              <button className="w-full mt-6 px-4 py-2 bg-blue-600 text-gray-200 rounded hover:bg-blue-700">
-                Add More Items
-              </button>
-            </>
-          ) : (
-            <div className="text-gray-400">
-              <p>Your cart is empty</p>
-              <Link href="/ProductsPage">
-                <button className="px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 bg-yellow-500 text-black font-semibold rounded-full shadow-lg hover:bg-yellow-400 hover:shadow-xl transition-transform transform hover:scale-105 duration-300 focus:outline-none focus:ring-4 focus:ring-yellow-500">
-                  Explore Now
-                </button>
-              </Link>
-            </div>
-          )}
+              ) : (
+                <div className="text-gray-400">
+                  <p>Your cart is empty</p>
+                  <Link href="/ProductsPage">
+                    <button className="px-6 sm:px-8 md:px-10 py-3 sm:py-4 md:py-5 bg-yellow-500 text-black font-semibold rounded-full shadow-lg hover:bg-yellow-400 hover:shadow-xl transition-transform transform hover:scale-105 duration-300 focus:outline-none focus:ring-4 focus:ring-yellow-500">
+                      Explore Now
+                    </button>
+                  </Link>
+                </div>
+              )}
+            </>)}
+
+
         </div>
         {/* Bill section  */}
         <div className="p-4 bg-gray-800 h-fit rounded-lg shadow-lg">

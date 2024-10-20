@@ -5,40 +5,81 @@ import { coffee0 } from '@/assets/Media';
 import Image from 'next/image';
 import Link from 'next/link';
 import { FaShoppingCart, FaHeart } from 'react-icons/fa';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/app/Redux/store';
+import { login, logout } from '@/app/Redux/userSlice';
+import { CartItem, addToCart, clearCart } from '@/app/Redux/cartSlice';
+const API_URL = "/api/products/cartItem";
 
 const CustomNavbar = () => {
+    const dispatch = useDispatch();
     const wishlist = useSelector((state: RootState) => state.wishlist.wishlist);
     const cart = useSelector((state: RootState) => state.cart.cart);
+    const user= useSelector((state: RootState) => state.user);
     const [isOpen, setIsOpen] = useState(false);
     const pathname = usePathname();
     const router = useRouter();
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     useEffect(() => {
-        const handleStorageChange = () => {
-            // const token = localStorage.getItem('customerEmail');
-
-
-            let customerEmail: string | null = null;
-            let token: string | null = null;
-
-            if (typeof window !== 'undefined') {
-                customerEmail = localStorage.getItem("customerEmail");
-                token = localStorage.getItem('token');
-            }
-
-
-
-
-            token ? setIsAuthenticated(true) : setIsAuthenticated(false);
-        };
-        handleStorageChange();
-        window.addEventListener('storage', handleStorageChange);
+        const isLogin = checkLoginStatus();
+        if (isLogin) {
+            router.push("/profile");
+        }
+        
+        window.addEventListener('storage', checkLoginStatus);
+    
         return () => {
-            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('storage', checkLoginStatus);
         };
     }, []);
+    
+    useEffect(() => {
+        const fetchData = async() =>{
+            const isLogin = checkLoginStatus();
+            setIsAuthenticated(isLogin);
+            if( isLogin && !user.isAdmin){
+                const cartData:CartItem[] = await fetchCart();
+                cartData.forEach((item: CartItem) => {
+                    dispatch(addToCart({ ...item,customerEmail:user.userEmail }));
+                  });
+            }
+        }
+        fetchData();
+    }, [user]);
+
+    const fetchCart = async () => {
+        try {
+          const response = await fetch(API_URL, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          const data = await response.json();
+          if (data.status === 200) {
+            return data.cartItems;
+          } else {
+            return [];
+          }
+        } catch (error) {
+          console.error("Error fetching products:", error);
+          return [];
+        }
+    };
+    
+    const checkLoginStatus = () => {
+        let customerEmail: string | null = null;
+        if (typeof window !== 'undefined') {
+            customerEmail = localStorage.getItem("customerEmail");
+        }
+        if (customerEmail) {
+            setIsAuthenticated(true);
+            dispatch(login({ userEmail: customerEmail, isAdmin: false, isLogined: true }));
+        } else {
+            setIsAuthenticated(false);
+        }
+        return !!customerEmail;
+    };
 
     const toggleMenu = () => {
         setIsOpen(!isOpen);
@@ -46,7 +87,8 @@ const CustomNavbar = () => {
 
     const isActive = (path: string) => pathname === path;
     const handleNavigation = (path: string) => {
-        if (isAuthenticated) {
+        const isLogin = checkLoginStatus();
+        if (isLogin) {
             router.push(path);
         } else {
             router.push('/Auth');
@@ -59,6 +101,8 @@ const CustomNavbar = () => {
             localStorage.removeItem('customerEmail');
         }
         setIsAuthenticated(false);
+        dispatch(logout());
+        dispatch(clearCart());
         router.push('/');
     };
 
@@ -89,9 +133,8 @@ const CustomNavbar = () => {
                             About
                             {isActive('/AboutPage') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
                         </Link>
-                        {isAuthenticated && (<span className={`relative transition duration-300 ${isActive('/Auth') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`} onClick={handleLogout} >
+                        {isAuthenticated && (<span className={`relative transition duration-300`} onClick={handleLogout} >
                             Logout
-                            {isActive('/Auth') && <span className="absolute left-0 bottom-0 w-full h-[2px] bg-indigo-500"></span>}
                         </span>)}
                         {!isAuthenticated && (<Link href="/Auth" className={`relative transition duration-300 ${isActive('/Auth') ? 'text-indigo-500' : 'hover:text-indigo-400 group'}`}>
                             SignIn

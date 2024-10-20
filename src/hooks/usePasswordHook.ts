@@ -15,7 +15,7 @@ const usePasswordHook = () => {
     reValidateMode: 'onChange',
   });
 
-  return { ...methods, watch: methods.watch };
+  return { ...methods, watch: methods.watch,clearErrors: methods.clearErrors};
 };
 
 export default usePasswordHook;

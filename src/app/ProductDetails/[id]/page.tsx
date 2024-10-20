@@ -3,17 +3,14 @@ import { useParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { FaHeart, FaShoppingCart } from "react-icons/fa";
-// import coffeeDummyImage from "@/assets/coffeeDummyImage.webp";
-// import { testimonialData, faqData } from "../../../assets/dummyData";
 import { Coffee, FAQItem, Testimonial } from "../../Models/interface";
 import { removeFromCart, addToCart } from "@/app/Redux/cartSlice";
 import { toggleWishlist } from "@/app/Redux/wishlistSlice";
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/app/Redux/store";
-import TestimonialCarousel from "@/components/TestimonialCarousel";
-import FAQ from "@/components/FAQ";
 import { toast } from "react-toastify";
+import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 
 // const API_URL = "http://localhost:3000/api/products/getProducts";
 const API_URL = "/api/products/getOneProduct";
@@ -22,64 +19,48 @@ const ProductDetailsPage: React.FC = () => {
   const { id } = useParams();
   const router = useRouter();
   const dispatch = useDispatch();
-  const [products, setProducts] = useState<Coffee[]>([]);
   const [coffee, setCoffee] = useState<Coffee | null>(null);
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
-  const [faqs, setFaqs] = useState<FAQItem[]>([]);
   const wishlist = useSelector((state: RootState) => state.wishlist.wishlist);
-  const cart = useSelector((state: RootState) => state.cart.cart);
   const [selectedSize, setSelectedSize] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(1);
   const [showQuantityInput, setShowQuantityInput] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const isInWishlist = wishlist.some((item) => item === coffee?.productId);
 
   let customerEmail: string | null = null;
   if (typeof window !== 'undefined') {
     customerEmail = localStorage.getItem("customerEmail");
   }
-  // const cartItem = cart.find((item) => item.productId === coffee?.id && item.size === selectedSize);
 
   const waitFn = async () => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch(`${API_URL}?id=${id}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        });
-        const data = await response.json();
-        // console.log("Raw response data:", data);
-
-        if ((data.success = true)) {
-          setCoffee(data.product);
-        } else {
-          console.error("Failed to fetch products:", data.message);
-        }
-      } catch (error) {
-        console.error("Error fetching products:", error);
-      }
-    };
-
-    await fetchProducts();
     if (id) {
-      const foundCoffee = products.find(
-        (coffee) => coffee.productId === String(id)
-      );
-      if (foundCoffee) {
-        setCoffee(foundCoffee);
-        setSelectedSize("medium");
-        // const faqItems = faqData.filter(
-        //   (item) => item.coffeeName == foundCoffee.name
-        // );
-        // setFaqs(faqItems);
-        // const testimonialItems = testimonialData.filter(
-        //   (item) => item.coffeeName == foundCoffee.name
-        // );
-        // setTestimonials(testimonialItems);
-      } else {
-        //navigate user to some other page
-      }
+      const fetchProducts = async () => {
+        try {
+          const response = await fetch(`${API_URL}?id=${id}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          const data = await response.json();
+          // console.log("Raw response data:", data);
+
+          if ((data.success = true)) {
+            setCoffee(data.product);
+            setSelectedSize("medium");
+          } else {
+            console.error("Failed to fetch products:", data.message);
+            router.push("/ProductsPage");
+          }
+        } catch (error) {
+          console.error("Error fetching products:", error);
+          router.push("/ProductsPage");
+        }
+        finally {
+          setIsLoading(false);
+        }
+      };
+      await fetchProducts();
     }
   }
 
@@ -131,7 +112,6 @@ const ProductDetailsPage: React.FC = () => {
       <div className="container mx-auto p-4 flex flex-col gap-12">
         {coffee ? (
           <>
-            {/* Coffee Image and Details */}
             <div className="flex flex-col h-[60vh] sm:gap-4 md:flex-row gap-8">
               <div className="w-full md:w-1/2">
                 <Image
@@ -146,8 +126,8 @@ const ProductDetailsPage: React.FC = () => {
                 <h1 className="text-3xl font-bold text-yellow-500">
                   {coffee.name}
                 </h1>
-                <p className="text-gray-600 mt-2">{coffee.description}</p>
-                <p className="text-gray-500 mt-1">Flavour: {coffee.flavour}</p>
+                <p className="text-gray-500 mt-2">{coffee.description}</p>
+                <p className="text-gray-500 mt-1"><b>Flavour :</b> {coffee.flavour}</p>
 
                 {/* Size and Price */}
                 <div className="mt-4">
@@ -230,31 +210,40 @@ const ProductDetailsPage: React.FC = () => {
                 )}
               </div>
             </div>
-
-            {/* Testimonial Section */}
-            {/* <div className="flex flex-col gap-4">
-              <h2 className="text-3xl w-full font-bold text-yellow-500 text-center">
-                Customer Testimonials
-              </h2>
-              <TestimonialCarousel testimonials={testimonials} />
-            </div> */}
-
-            {/* FAQ Section */}
-            {/* <div className="flex flex-col gap-4">
-              <div className="rounded-xl text-center">
-                <h2 className="text-3xl w-full font-bold text-yellow-500 mb-2">
-                  Frequently Asked Questions
-                </h2>
-                <p className="text-sm">
-                  Find answers to general questions about our {coffee.name} and
-                  services.
-                </p>
-              </div>
-              <FAQ faqs={faqs} />
-            </div> */}
           </>
         ) : (
-          <div>Product not found</div>
+          <>
+          <SkeletonTheme baseColor="#1f2937" highlightColor="#E5E7EB">
+            <div className="flex flex-col h-[60vh] sm:gap-4 md:flex-row gap-8">
+              {/* Image Skeleton */}
+              <div className="w-full md:w-1/2">
+                <Skeleton height={300} width={500} className="rounded-2xl h-full" />
+              </div>
+
+              {/* Coffee Details Skeleton */}
+              <div className="w-full md:w-1/2">
+                <Skeleton height={30} width="80%" />
+                <Skeleton height={20} width="100%" className="mt-3" />
+                <Skeleton height={20} width="50%" className="mt-2" />
+
+                <div className="mt-4">
+                  <Skeleton height={25} width="60%" />
+                  <div className="flex gap-2 mt-2">
+                    <Skeleton height={40} width={100} />
+                    <Skeleton height={40} width={100} />
+                    <Skeleton height={40} width={100} />
+                  </div>
+                </div>
+
+                <div className="flex gap-4 mt-6">
+                  <Skeleton width={50} height={40} />
+                  <Skeleton width={50} height={40} />
+                  <Skeleton width={50} height={40} />
+                </div>
+              </div>
+            </div>
+          </SkeletonTheme>
+          </>
         )}
       </div>
     </div>

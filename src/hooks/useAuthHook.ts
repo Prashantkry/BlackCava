@@ -16,7 +16,7 @@ const useAuthHook = () => {
       mode: 'onBlur',
       reValidateMode: 'onChange',
     });
-    return { ...methods, watch: methods.watch,reset:methods.reset };
+    return { ...methods, watch: methods.watch,reset:methods.reset,clearErrors:methods.clearErrors };
   };
   
   export default useAuthHook;

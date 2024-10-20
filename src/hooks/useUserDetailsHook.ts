@@ -13,7 +13,7 @@ interface userInputs {
 }
 
 const useUserDetailsHook = () => {
-  return useForm<userInputs>({
+  const methods= useForm<userInputs>({
     defaultValues: {
       name: '',
       email: '',
@@ -27,6 +27,7 @@ const useUserDetailsHook = () => {
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
+  return {...methods, watch: methods.watch,clearErrors: methods.clearErrors};
 };
 
 export default useUserDetailsHook;

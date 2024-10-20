@@ -1,13 +1,16 @@
 "use client";
-import useAuthHook from '@/hooks/useAuthHook';
 import { useRouter } from 'next/navigation';
 import React, { useState } from 'react';
 import { SubmitHandler } from 'react-hook-form';
+import { useDispatch } from 'react-redux';
 import { toast } from 'react-toastify'; // Import toast
+import { login } from '../Redux/userSlice';
+import useAuthHook from '@/hooks/useAuthHook';
 
 const AuthPage = () => {
+    const dispatch = useDispatch();
     const [isLogin, setIsLogin] = useState(true);
-    const { register: authRegister, handleSubmit: authSubmit, formState: { errors: authErrors }, watch, reset } = useAuthHook();
+    const { register: authRegister, handleSubmit: authSubmit, formState: { errors: authErrors }, watch, reset,clearErrors } = useAuthHook();
     const navigate = useRouter();
     // const API_URL = isLogin ? "http://localhost:3000/api/signIn" : "http://localhost:3000/api/auth";
     const API_URL = isLogin ? "/api/signIn" : "/api/auth";
@@ -32,6 +35,7 @@ const AuthPage = () => {
                 const customerEmail = await result.email;
                 console.log("customer id in signIn => ", customerEmail)
                 localStorage.setItem('customerEmail', customerEmail);
+                dispatch(login({ userEmail: customerEmail, isAdmin: false, isLogined: true }));
                 navigate.push("/")
             }
             else if (result.status === 201) {
@@ -58,6 +62,7 @@ const AuthPage = () => {
 
     const handleToggle = () => {
         reset();
+        clearErrors();
         setIsLogin(!isLogin);
     };
 
@@ -92,16 +97,16 @@ const AuthPage = () => {
                                         message: 'Password must be at least 8 characters long',
                                     },
                                     pattern: {
-                                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-                                        message: 'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character',
-                                    },
+                                        value: /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_])[A-Za-z\d\W_]{8,}$/,
+                                        message: 'Password must contain at least one uppercase letter, one lowercase letter, one digit, and one special character.',
+                                    }
                                 })}
                             />
                             {authErrors.password && <p className="text-red-500 text-sm">{authErrors.password.message}</p>}
                         </div>
 
                         {isLogin && (
-                            <p className='text-right text-sm text-black'>
+                            <p className='text-right text-sm text-white'>
                                 Forgot Your password?
                             </p>
                         )}
@@ -129,7 +134,7 @@ const AuthPage = () => {
                         <div className="text-center">
                             <span className='text-gray-500'>{isLogin ? "Don't have an account?" : "Already have an account?"} </span>
                             <button
-                                onClick={() => handleToggle()}
+                                onClick={handleToggle} type="button"
                                 className="text-yellow-500 text-base md:text-xl">
                                 {isLogin ? 'Sign Up' : 'Login'}
                             </button>
